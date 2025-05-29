@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
-	"one-api/common"
+	"tea-api/common"
 )
 
 type turnstileCheckResponse struct {

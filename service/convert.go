@@ -3,9 +3,9 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"one-api/common"
-	"one-api/dto"
-	relaycommon "one-api/relay/common"
+	"tea-api/common"
+	"tea-api/dto"
+	relaycommon "tea-api/relay/common"
 	"strings"
 )
 

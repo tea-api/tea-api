@@ -1,7 +1,7 @@
 package baidu
 
 import (
-	"one-api/dto"
+	"tea-api/dto"
 	"time"
 )
 

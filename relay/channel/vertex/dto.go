@@ -1,7 +1,7 @@
 package vertex
 
 import (
-	"one-api/dto"
+	"tea-api/dto"
 )
 
 type VertexAIClaudeRequest struct {

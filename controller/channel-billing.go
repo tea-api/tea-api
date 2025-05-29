@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/model"
-	"one-api/service"
+	"tea-api/common"
+	"tea-api/model"
+	"tea-api/service"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// https://github.com/songquanpeng/one-api/issues/79
+// https://github.com/songquanpeng/tea-api/issues/79
 
 type OpenAISubscriptionResponse struct {
 	Object             string  `json:"object"`

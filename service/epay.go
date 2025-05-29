@@ -1,7 +1,7 @@
 package service
 
 import (
-	"one-api/setting"
+	"tea-api/setting"
 )
 
 func GetCallbackAddress() string {

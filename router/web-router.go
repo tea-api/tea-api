@@ -6,9 +6,9 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"one-api/common"
-	"one-api/controller"
-	"one-api/middleware"
+	"tea-api/common"
+	"tea-api/controller"
+	"tea-api/middleware"
 	"strings"
 )
 

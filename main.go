@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"one-api/common"
-	"one-api/constant"
-	"one-api/controller"
-	"one-api/middleware"
-	"one-api/model"
-	"one-api/router"
-	"one-api/service"
-	"one-api/setting/operation_setting"
+	"tea-api/common"
+	"tea-api/constant"
+	"tea-api/controller"
+	"tea-api/middleware"
+	"tea-api/model"
+	"tea-api/router"
+	"tea-api/service"
+	"tea-api/setting/operation_setting"
 	"os"
 	"strconv"
 
@@ -40,7 +40,7 @@ func main() {
 	common.LoadEnv()
 
 	common.SetupLogger()
-	common.SysLog("New API " + common.Version + " started")
+	common.SysLog("Tea API " + common.Version + " started")
 	if os.Getenv("GIN_MODE") != "debug" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -154,7 +154,7 @@ func main() {
 		common.SysError(fmt.Sprintf("panic detected: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": gin.H{
-				"message": fmt.Sprintf("Panic detected, error: %v. Please submit a issue here: https://github.com/Calcium-Ion/new-api", err),
+				"message": fmt.Sprintf("Panic detected, error: %v. Please submit a issue here: https://github.com/tea-api/tea-api", err),
 				"type":    "new_api_panic",
 			},
 		})

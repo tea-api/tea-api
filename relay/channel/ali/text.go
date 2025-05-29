@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/dto"
-	"one-api/relay/helper"
-	"one-api/service"
+	"tea-api/common"
+	"tea-api/dto"
+	"tea-api/relay/helper"
+	"tea-api/service"
 	"strings"
 )
 

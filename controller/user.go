@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"one-api/common"
-	"one-api/model"
-	"one-api/setting"
+	"tea-api/common"
+	"tea-api/model"
+	"tea-api/setting"
 	"strconv"
 	"strings"
 	"sync"
 
-	"one-api/constant"
+	"tea-api/constant"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"

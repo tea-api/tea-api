@@ -4,10 +4,10 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"one-api/dto"
-	"one-api/relay/channel/claude"
-	relaycommon "one-api/relay/common"
-	"one-api/setting/model_setting"
+	"tea-api/dto"
+	"tea-api/relay/channel/claude"
+	relaycommon "tea-api/relay/common"
+	"tea-api/setting/model_setting"
 
 	"github.com/gin-gonic/gin"
 )

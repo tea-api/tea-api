@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/dto"
-	"one-api/relay/channel"
-	"one-api/relay/common"
+	"tea-api/dto"
+	"tea-api/relay/channel"
+	"tea-api/relay/common"
 	"time"
 
 	"github.com/gin-gonic/gin"

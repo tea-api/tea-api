@@ -1,8 +1,8 @@
 package service
 
 import (
-	"one-api/dto"
-	relaycommon "one-api/relay/common"
+	"tea-api/dto"
+	relaycommon "tea-api/relay/common"
 
 	"github.com/gin-gonic/gin"
 )

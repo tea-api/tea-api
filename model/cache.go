@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"one-api/common"
+	"tea-api/common"
 	"sort"
 	"strings"
 	"sync"

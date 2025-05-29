@@ -3,8 +3,8 @@ package channel
 import (
 	"io"
 	"net/http"
-	"one-api/dto"
-	relaycommon "one-api/relay/common"
+	"tea-api/dto"
+	relaycommon "tea-api/relay/common"
 
 	"github.com/gin-gonic/gin"
 )

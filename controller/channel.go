@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"one-api/common"
-	"one-api/model"
+	"tea-api/common"
+	"tea-api/model"
 	"strconv"
 	"strings"
 

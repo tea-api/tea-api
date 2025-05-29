@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
-	"one-api/dto"
-	"one-api/setting"
+	"tea-api/dto"
+	"tea-api/setting"
 	"strings"
 )
 

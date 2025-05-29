@@ -107,11 +107,11 @@ const Home = () => {
                   <p>
                     {t('源码')}：
                     <a
-                      href='https://github.com/Calcium-Ion/new-api'
+                      href='https://github.com/tea-api/tea-api'
                       target='_blank'
                       rel='noreferrer'
                     >
-                      https://github.com/Calcium-Ion/new-api
+                      https://github.com/tea-api/tea-api
                     </a>
                   </p>
                   

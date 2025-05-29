@@ -36,12 +36,12 @@ jobs:
       - name: Build Backend
         run: |
           go mod download
-          go build -ldflags "-s -w -X 'one-api/common.Version=$(git describe --tags)'" -o one-api.exe
+          go build -ldflags "-s -w -X 'tea-api/common.Version=$(git describe --tags)'" -o tea-api.exe
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: one-api.exe
+          files: tea-api.exe
           draft: true
           generate_release_notes: true
         env:

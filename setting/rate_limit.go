@@ -3,7 +3,7 @@ package setting
 import (
 	"encoding/json"
 	"fmt"
-	"one-api/common"
+	"tea-api/common"
 	"sync"
 )
 

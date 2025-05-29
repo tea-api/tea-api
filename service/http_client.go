@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"one-api/common"
+	"tea-api/common"
 	"time"
 
 	"golang.org/x/net/proxy"

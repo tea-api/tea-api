@@ -1,10 +1,10 @@
 package common
 
 import (
-	"one-api/common"
-	"one-api/constant"
-	"one-api/dto"
-	relayconstant "one-api/relay/constant"
+	"tea-api/common"
+	"tea-api/constant"
+	"tea-api/dto"
+	relayconstant "tea-api/relay/constant"
 	"strings"
 	"time"
 

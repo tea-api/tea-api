@@ -6,12 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/dto"
-	"one-api/relay/channel/openai"
-	relaycommon "one-api/relay/common"
-	"one-api/relay/helper"
-	"one-api/service"
+	"tea-api/common"
+	"tea-api/dto"
+	"tea-api/relay/channel/openai"
+	relaycommon "tea-api/relay/common"
+	"tea-api/relay/helper"
+	"tea-api/service"
 	"strings"
 )
 

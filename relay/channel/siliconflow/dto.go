@@ -1,6 +1,6 @@
 package siliconflow
 
-import "one-api/dto"
+import "tea-api/dto"
 
 type SFTokens struct {
 	InputTokens  int `json:"input_tokens"`

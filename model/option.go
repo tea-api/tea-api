@@ -1,10 +1,10 @@
 package model
 
 import (
-	"one-api/common"
-	"one-api/setting"
-	"one-api/setting/config"
-	"one-api/setting/operation_setting"
+	"tea-api/common"
+	"tea-api/setting"
+	"tea-api/setting/config"
+	"tea-api/setting/operation_setting"
 	"strconv"
 	"strings"
 	"time"

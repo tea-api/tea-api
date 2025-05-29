@@ -39,12 +39,12 @@ const About = () => {
             </Layout.Header>
             <Layout.Content>
               <p>可在设置页面设置关于内容，支持 HTML & Markdown</p>
-              New-API项目仓库地址：
-              <a href='https://github.com/Calcium-Ion/new-api'>
-                https://github.com/Calcium-Ion/new-api
+              Tea-API项目仓库地址：
+              <a href='https://github.com/tea-api/tea-api'>
+                https://github.com/tea-api/tea-api
               </a>
               <p>
-                NewAPI © 2023 CalciumIon | 基于 One API v0.5.4 © 2023
+                TeaAPI © 2023 CalciumIon | 基于 One API v0.5.4 © 2023
                 JustSong。
               </p>
               <p>

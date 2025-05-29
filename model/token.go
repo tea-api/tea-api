@@ -3,7 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
-	"one-api/common"
+	"tea-api/common"
 	"strings"
 
 	"github.com/bytedance/gopkg/util/gopool"

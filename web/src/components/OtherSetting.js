@@ -168,12 +168,12 @@ const OtherSetting = () => {
       // Option 1: Use a public CORS proxy service
       // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
       // const res = await API.get(
-      //   `${proxyUrl}https://api.github.com/repos/Calcium-Ion/new-api/releases/latest`,
+      //   `${proxyUrl}https://api.github.com/repos/tea-api/tea-api/releases/latest`,
       // );
 
       // Option 2: Use the JSON proxy approach which often works better with GitHub API
       const res = await fetch(
-        'https://api.github.com/repos/Calcium-Ion/new-api/releases/latest',
+        'https://api.github.com/repos/tea-api/tea-api/releases/latest',
         {
           headers: {
             Accept: 'application/json',
@@ -233,7 +233,7 @@ const OtherSetting = () => {
   // Function to open GitHub release page
   const openGitHubRelease = () => {
     window.open(
-      `https://github.com/Calcium-Ion/new-api/releases/tag/${updateData.tag_name}`,
+      `https://github.com/tea-api/tea-api/releases/tag/${updateData.tag_name}`,
       '_blank',
     );
   };

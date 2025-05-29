@@ -1,9 +1,9 @@
 package router
 
 import (
-	"one-api/controller"
-	"one-api/middleware"
-	"one-api/relay"
+	"tea-api/controller"
+	"tea-api/middleware"
+	"tea-api/relay"
 
 	"github.com/gin-gonic/gin"
 )

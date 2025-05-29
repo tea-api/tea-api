@@ -2,8 +2,8 @@ package controller
 
 import (
 	"net/http"
-	"one-api/common"
-	"one-api/model"
+	"tea-api/common"
+	"tea-api/model"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

@@ -20,7 +20,7 @@ RUN go mod download
 
 COPY . .
 COPY --from=builder /build/dist ./web/dist
-RUN go build -ldflags "-s -w -X 'one-api/common.Version=$(cat VERSION)'" -o one-api
+RUN go build -ldflags "-s -w -X 'tea-api/common.Version=$(cat VERSION)'" -o tea-api
 
 FROM alpine
 
@@ -29,7 +29,7 @@ RUN apk update \
     && apk add --no-cache ca-certificates tzdata ffmpeg \
     && update-ca-certificates
 
-COPY --from=builder2 /build/one-api /
+COPY --from=builder2 /build/tea-api /
 EXPOSE 3000
 WORKDIR /data
-ENTRYPOINT ["/one-api"]
+ENTRYPOINT ["/tea-api"]

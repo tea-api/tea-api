@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/dto"
-	"one-api/relay/channel"
-	"one-api/relay/channel/openai"
-	relaycommon "one-api/relay/common"
-	"one-api/relay/constant"
+	"tea-api/dto"
+	"tea-api/relay/channel"
+	"tea-api/relay/channel/openai"
+	relaycommon "tea-api/relay/common"
+	"tea-api/relay/constant"
 
 	"github.com/gin-gonic/gin"
 )

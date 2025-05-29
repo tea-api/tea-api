@@ -3,10 +3,10 @@ package service
 import (
 	"fmt"
 	"net/http"
-	"one-api/common"
-	"one-api/dto"
-	"one-api/model"
-	"one-api/setting/operation_setting"
+	"tea-api/common"
+	"tea-api/dto"
+	"tea-api/model"
+	"tea-api/setting/operation_setting"
 	"strings"
 )
 

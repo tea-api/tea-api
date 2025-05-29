@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 	"gorm.io/gorm"
-	"one-api/common"
+	"tea-api/common"
 	"sync"
 	"time"
 )

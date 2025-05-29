@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"one-api/common"
-	"one-api/constant"
+	"tea-api/common"
+	"tea-api/constant"
 	"time"
 
 	"github.com/bytedance/gopkg/util/gopool"

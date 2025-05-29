@@ -2,7 +2,7 @@ package operation_setting
 
 import (
 	"encoding/json"
-	"one-api/common"
+	"tea-api/common"
 	"strings"
 	"sync"
 )

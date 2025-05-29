@@ -1,8 +1,8 @@
 package model
 
 import (
-	"one-api/common"
-	"one-api/setting/operation_setting"
+	"tea-api/common"
+	"tea-api/setting/operation_setting"
 	"sync"
 	"time"
 )

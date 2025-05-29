@@ -8,12 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/dto"
-	relaycommon "one-api/relay/common"
-	"one-api/relay/helper"
-	"one-api/service"
-	"one-api/setting/model_setting"
+	"tea-api/common"
+	"tea-api/dto"
+	relaycommon "tea-api/relay/common"
+	"tea-api/relay/helper"
+	"tea-api/service"
+	"tea-api/setting/model_setting"
 	"strings"
 )
 

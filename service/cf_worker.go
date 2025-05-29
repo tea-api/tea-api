@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"one-api/common"
-	"one-api/setting"
+	"tea-api/common"
+	"tea-api/setting"
 	"strings"
 )
 

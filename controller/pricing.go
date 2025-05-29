@@ -2,9 +2,9 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"one-api/model"
-	"one-api/setting"
-	"one-api/setting/operation_setting"
+	"tea-api/model"
+	"tea-api/setting"
+	"tea-api/setting/operation_setting"
 )
 
 func GetPricing(c *gin.Context) {

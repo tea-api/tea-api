@@ -1,7 +1,7 @@
 package aws
 
 import (
-	"one-api/dto"
+	"tea-api/dto"
 )
 
 type AwsClaudeRequest struct {

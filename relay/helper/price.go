@@ -3,11 +3,11 @@ package helper
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"one-api/common"
-	constant2 "one-api/constant"
-	relaycommon "one-api/relay/common"
-	"one-api/setting"
-	"one-api/setting/operation_setting"
+	"tea-api/common"
+	constant2 "tea-api/constant"
+	relaycommon "tea-api/relay/common"
+	"tea-api/setting"
+	"tea-api/setting/operation_setting"
 )
 
 type PriceData struct {

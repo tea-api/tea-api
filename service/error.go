@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"one-api/common"
-	"one-api/dto"
+	"tea-api/common"
+	"tea-api/dto"
 	"strconv"
 	"strings"
 )

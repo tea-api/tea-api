@@ -5,27 +5,27 @@
 
 ![new-api](/web/public/logo.png)
 
-# New API
+# Tea API
 
 🍥 Next-Generation Large Model Gateway and AI Asset Management System
 
-<a href="https://trendshift.io/repositories/8227" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8227" alt="Calcium-Ion%2Fnew-api | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/8227" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8227" alt="tea-api%2Ftea-api | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/Calcium-Ion/new-api/main/LICENSE">
-    <img src="https://img.shields.io/github/license/Calcium-Ion/new-api?color=brightgreen" alt="license">
+  <a href="https://raw.githubusercontent.com/tea-api/tea-api/main/LICENSE">
+    <img src="https://img.shields.io/github/license/tea-api/tea-api?color=brightgreen" alt="license">
   </a>
-  <a href="https://github.com/Calcium-Ion/new-api/releases/latest">
-    <img src="https://img.shields.io/github/v/release/Calcium-Ion/new-api?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://github.com/tea-api/tea-api/releases/latest">
+    <img src="https://img.shields.io/github/v/release/tea-api/tea-api?color=brightgreen&include_prereleases" alt="release">
   </a>
-  <a href="https://github.com/users/Calcium-Ion/packages/container/package/new-api">
+  <a href="https://github.com/users/tea-api/packages/container/package/tea-api">
     <img src="https://img.shields.io/badge/docker-ghcr.io-blue" alt="docker">
   </a>
-  <a href="https://hub.docker.com/r/CalciumIon/new-api">
+  <a href="https://hub.docker.com/r/tea-api/tea-api">
     <img src="https://img.shields.io/badge/docker-dockerHub-blue" alt="docker">
   </a>
-  <a href="https://goreportcard.com/report/github.com/Calcium-Ion/new-api">
-    <img src="https://goreportcard.com/badge/github.com/Calcium-Ion/new-api" alt="GoReportCard">
+  <a href="https://goreportcard.com/report/github.com/tea-api/tea-api">
+    <img src="https://goreportcard.com/badge/github.com/tea-api/tea-api" alt="GoReportCard">
   </a>
 </p>
 </div>
@@ -46,7 +46,7 @@ For detailed documentation, please visit our official Wiki: [https://docs.newapi
 
 ## ✨ Key Features
 
-New API offers a wide range of features, please refer to [Features Introduction](https://docs.newapi.pro/wiki/features-introduction) for details:
+Tea API offers a wide range of features, please refer to [Features Introduction](https://docs.newapi.pro/wiki/features-introduction) for details:
 
 1. 🎨 Brand new UI interface
 2. 🌍 Multi-language support
@@ -116,7 +116,7 @@ For detailed configuration instructions, please refer to [Installation Guide-Env
 For detailed deployment guides, please refer to [Installation Guide-Deployment Methods](https://docs.newapi.pro/installation):
 
 > [!TIP]
-> Latest Docker image: `calciumion/new-api:latest`
+> Latest Docker image: `tea-api/tea-api:latest`
 
 ### Multi-machine Deployment Considerations
 - Environment variable `SESSION_SECRET` must be set, otherwise login status will be inconsistent across multiple machines
@@ -135,7 +135,7 @@ Install BaoTa Panel (version **9.2.0** or above), find **New-API** in the applic
 #### Using Docker Compose (Recommended)
 ```shell
 # Download the project
-git clone https://github.com/Calcium-Ion/new-api.git
+git clone https://github.com/tea-api/tea-api.git
 cd new-api
 # Edit docker-compose.yml as needed
 # Start
@@ -145,10 +145,10 @@ docker-compose up -d
 #### Using Docker Image Directly
 ```shell
 # Using SQLite
-docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data tea-api/tea-api:latest
 
 # Using MySQL
-docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data calciumion/new-api:latest
+docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data tea-api/tea-api:latest
 ```
 
 ## Channel Retry and Cache
@@ -174,9 +174,9 @@ For detailed API documentation, please refer to [API Documentation](https://docs
 - [chatnio](https://github.com/Deeptrain-Community/chatnio): Next-generation AI one-stop B/C-end solution
 - [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool): Query usage quota with key
 
-Other projects based on New API:
-- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon): High-performance optimized version of New API
-- [VoAPI](https://github.com/VoAPI/VoAPI): Frontend beautified version based on New API
+Other projects based on Tea API:
+- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon): High-performance optimized version of Tea API
+- [VoAPI](https://github.com/VoAPI/VoAPI): Frontend beautified version based on Tea API
 
 ## Help and Support
 
@@ -187,4 +187,4 @@ If you have any questions, please refer to [Help and Support](https://docs.newap
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Calcium-Ion/new-api&type=Date)](https://star-history.com/#Calcium-Ion/new-api&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=tea-api/tea-api&type=Date)](https://star-history.com/#tea-api/tea-api&Date)

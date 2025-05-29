@@ -8,6 +8,6 @@ build
 logs
 web/dist
 .env
-one-api
+tea-api
 .DS_Store
 tiktoken_cache

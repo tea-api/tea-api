@@ -8,8 +8,8 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"one-api/common"
-	"one-api/model"
+	"tea-api/common"
+	"tea-api/model"
 	"strconv"
 	"time"
 )

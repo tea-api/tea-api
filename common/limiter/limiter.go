@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"one-api/common"
+	"tea-api/common"
 	"sync"
 )
 

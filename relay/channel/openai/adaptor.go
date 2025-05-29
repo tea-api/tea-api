@@ -9,20 +9,20 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
-	"one-api/common"
-	constant2 "one-api/constant"
-	"one-api/dto"
-	"one-api/relay/channel"
-	"one-api/relay/channel/ai360"
-	"one-api/relay/channel/lingyiwanwu"
-	"one-api/relay/channel/minimax"
-	"one-api/relay/channel/moonshot"
-	"one-api/relay/channel/openrouter"
-	"one-api/relay/channel/xinference"
-	relaycommon "one-api/relay/common"
-	"one-api/relay/common_handler"
-	"one-api/relay/constant"
-	"one-api/service"
+	"tea-api/common"
+	constant2 "tea-api/constant"
+	"tea-api/dto"
+	"tea-api/relay/channel"
+	"tea-api/relay/channel/ai360"
+	"tea-api/relay/channel/lingyiwanwu"
+	"tea-api/relay/channel/minimax"
+	"tea-api/relay/channel/moonshot"
+	"tea-api/relay/channel/openrouter"
+	"tea-api/relay/channel/xinference"
+	relaycommon "tea-api/relay/common"
+	"tea-api/relay/common_handler"
+	"tea-api/relay/constant"
+	"tea-api/service"
 	"path/filepath"
 	"strings"
 
@@ -93,7 +93,7 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		if info.ChannelCreateTime < constant2.AzureNoRemoveDotTime {
 			model_ = strings.Replace(model_, ".", "", -1)
 		}
-		// https://github.com/songquanpeng/one-api/issues/67
+		// https://github.com/songquanpeng/tea-api/issues/67
 		requestURL = fmt.Sprintf("/openai/deployments/%s/%s", model_, task)
 		if info.RelayMode == constant.RelayModeRealtime {
 			requestURL = fmt.Sprintf("/openai/realtime?deployment=%s&api-version=%s", model_, apiVersion)
@@ -139,8 +139,8 @@ func (a *Adaptor) SetupRequestHeader(c *gin.Context, header *http.Header, info *
 		header.Set("Authorization", "Bearer "+info.ApiKey)
 	}
 	if info.ChannelType == common.ChannelTypeOpenRouter {
-		header.Set("HTTP-Referer", "https://github.com/Calcium-Ion/new-api")
-		header.Set("X-Title", "New API")
+		header.Set("HTTP-Referer", "https://github.com/tea-api/tea-api")
+		header.Set("X-Title", "Tea API")
 	}
 	return nil
 }

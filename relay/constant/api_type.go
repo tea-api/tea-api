@@ -1,7 +1,7 @@
 package constant
 
 import (
-	"one-api/common"
+	"tea-api/common"
 )
 
 const (

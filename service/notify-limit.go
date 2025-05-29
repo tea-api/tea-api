@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 	"github.com/bytedance/gopkg/util/gopool"
-	"one-api/common"
-	"one-api/constant"
+	"tea-api/common"
+	"tea-api/constant"
 	"strconv"
 	"sync"
 	"time"

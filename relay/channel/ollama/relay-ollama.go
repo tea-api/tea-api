@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"one-api/dto"
-	"one-api/service"
+	"tea-api/dto"
+	"tea-api/service"
 	"strings"
 )
 

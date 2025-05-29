@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"one-api/relay/common"
+	"tea-api/relay/common"
 
 	"github.com/gin-gonic/gin"
 )

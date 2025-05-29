@@ -2,7 +2,7 @@ package model_setting
 
 import (
 	"net/http"
-	"one-api/setting/config"
+	"tea-api/setting/config"
 )
 
 //var claudeHeadersSettings = map[string][]string{}

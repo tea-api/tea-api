@@ -1,7 +1,7 @@
 package service
 
 import (
-	"one-api/dto"
+	"tea-api/dto"
 )
 
 //func GetPromptTokens(textRequest dto.GeneralOpenAIRequest, relayMode int) (int, error) {

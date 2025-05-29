@@ -1,7 +1,7 @@
 package zhipu
 
 import (
-	"one-api/dto"
+	"tea-api/dto"
 	"time"
 )
 

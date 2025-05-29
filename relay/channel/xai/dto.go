@@ -1,6 +1,6 @@
 package xai
 
-import "one-api/dto"
+import "tea-api/dto"
 
 // ChatCompletionResponse represents the response from XAI chat completion API
 type ChatCompletionResponse struct {

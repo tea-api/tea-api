@@ -3,8 +3,8 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"one-api/model"
-	"one-api/setting"
+	"tea-api/model"
+	"tea-api/setting"
 )
 
 func GetGroups(c *gin.Context) {

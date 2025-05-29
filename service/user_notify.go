@@ -2,10 +2,10 @@ package service
 
 import (
 	"fmt"
-	"one-api/common"
-	"one-api/constant"
-	"one-api/dto"
-	"one-api/model"
+	"tea-api/common"
+	"tea-api/constant"
+	"tea-api/dto"
+	"tea-api/model"
 	"strings"
 )
 

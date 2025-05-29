@@ -18,10 +18,10 @@ var (
 )
 
 func printHelp() {
-	fmt.Println("New API " + Version + " - All in one API service for OpenAI API.")
+	fmt.Println("Tea API " + Version + " - All in one API service for OpenAI API.")
 	fmt.Println("Copyright (C) 2023 JustSong. All rights reserved.")
 	fmt.Println("GitHub: https://github.com/songquanpeng/one-api")
-	fmt.Println("Usage: one-api [--port <port>] [--log-dir <log directory>] [--version] [--help]")
+	fmt.Println("Usage: tea-api [--port <port>] [--log-dir <log directory>] [--version] [--help]")
 }
 
 func LoadEnv() {

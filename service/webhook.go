@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"one-api/dto"
-	"one-api/setting"
+	"tea-api/dto"
+	"tea-api/setting"
 	"time"
 )
 

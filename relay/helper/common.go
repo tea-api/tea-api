@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"one-api/common"
-	"one-api/dto"
+	"tea-api/common"
+	"tea-api/dto"
 )
 
 func SetEventStreamHeaders(c *gin.Context) {

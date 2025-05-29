@@ -3,7 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
-	"one-api/common"
+	"tea-api/common"
 	"os"
 	"strings"
 	"time"

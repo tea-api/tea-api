@@ -2,8 +2,8 @@ package model
 
 import (
 	"log"
-	"one-api/common"
-	"one-api/constant"
+	"tea-api/common"
+	"tea-api/constant"
 	"os"
 	"strings"
 	"sync"
