@@ -11,3 +11,5 @@ web/dist
 tea-api
 .DS_Store
 tiktoken_cache
+tea-api-macos
+apply.sh
