@@ -15,6 +15,7 @@ import Token from './pages/Token';
 import EditChannel from './pages/Channel/EditChannel';
 import Redemption from './pages/Redemption';
 import TopUp from './pages/TopUp';
+import Checkin from './pages/Checkin';
 import Log from './pages/Log';
 import Chat from './pages/Chat';
 import Chat2Link from './pages/Chat2Link';
@@ -208,6 +209,16 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <TopUp />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/checkin'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Checkin />
               </Suspense>
             </PrivateRoute>
           }

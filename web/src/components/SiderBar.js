@@ -91,6 +91,7 @@ const routerMap = {
   task: '/task',
   playground: '/playground',
   personal: '/personal',
+  checkin: '/checkin',
 };
 
 const SiderBar = () => {
@@ -203,6 +204,12 @@ const SiderBar = () => {
         itemKey: 'topup',
         to: '/topup',
         icon: <IconCreditCard />,
+      },
+      {
+        text: t('签到'),
+        itemKey: 'checkin',
+        to: '/checkin',
+        icon: <IconChecklistStroked />,
       },
       {
         text: t('个人设置'),

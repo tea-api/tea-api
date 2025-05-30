@@ -25,6 +25,7 @@ import {
   IconInfoCircle,
   IconCreditCard,
   IconTerminal,
+  IconChecklistStroked,
 } from '@douyinfe/semi-icons';
 import {
   Avatar,
@@ -146,6 +147,12 @@ const HeaderBar = () => {
       to: '/pricing',
       icon: <IconPriceTag style={headerIconStyle} />,
     },
+    {
+      text: t('签到'),
+      itemKey: 'checkin',
+      to: '/checkin',
+      icon: <IconChecklistStroked style={headerIconStyle} />,
+    },
     // Only include the docs button if docsLink exists
     ...(docsLink
       ? [
@@ -241,6 +248,7 @@ const HeaderBar = () => {
                 login: '/login',
                 register: '/register',
                 pricing: '/pricing',
+                checkin: '/checkin',
                 detail: '/detail',
                 home: '/',
                 chat: '/chat',

@@ -151,6 +151,14 @@ docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -
 docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data tea-api/tea-api:latest
 ```
 
+## 新增功能概览
+本仓库新增了部分扩展能力，主要包括：
+
+1. **多渠道轮询调度**：引入 `ChannelManager` 统一管理各类渠道，并支持简单的权重选择与健康检查。
+2. **正则表达式屏蔽词**：提供 `RegexFilter` 组件，可按分组添加正则规则以过滤敏感内容。
+3. **签到系统**：新增 `CheckinRecord` 模型及 `Checkin` 服务，记录用户每日签到信息。
+
+
 ## 渠道重试与缓存
 渠道重试功能已经实现，可以在`设置->运营设置->通用设置`设置重试次数，**建议开启缓存**功能。
 
