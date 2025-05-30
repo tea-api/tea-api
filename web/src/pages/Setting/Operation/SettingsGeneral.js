@@ -8,6 +8,7 @@ import {
   Spin,
   Collapse,
   Modal,
+  TagInput,
 } from '@douyinfe/semi-ui';
 import {
   compareObjects,
@@ -33,9 +34,12 @@ export default function GeneralSettings(props) {
     DemoSiteEnabled: false,
     SelfUseModeEnabled: false,
     CheckinEnabled: false,
-    BaseCheckinReward: '',
-    ContinuousCheckinReward: '',
-    MaxContinuousRewardDays: '',
+    BaseCheckinReward: 10000,
+    ContinuousCheckinReward: 1000,
+    MaxContinuousRewardDays: 7,
+    CheckinStreakReset: true,
+    SpecialRewardDays: [7, 15, 30],
+    SpecialRewards: [20000, 50000, 100000],
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -67,6 +71,9 @@ export default function GeneralSettings(props) {
       let value = '';
       if (typeof item.newValue === 'boolean') {
         value = String(item.newValue);
+      } else if (Array.isArray(item.newValue) && (item.key === 'SpecialRewardDays' || item.key === 'SpecialRewards')) {
+        // 对数组类型的特殊选项进行JSON字符串转换
+        value = JSON.stringify(item.newValue);
       } else {
         value = item.newValue;
       }
@@ -229,6 +236,111 @@ export default function GeneralSettings(props) {
                 />
               </Col>
             </Row>
+            
+            {/* 签到设置区域 */}
+            {inputs.CheckinEnabled && (
+              <Row gutter={16}>
+                <Col xs={24}>
+                  <Form.Section text={t('签到奖励设置')}>
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                        <Form.InputNumber
+                          field={'BaseCheckinReward'}
+                          label={t('基础签到奖励')}
+                          initValue={10000}
+                          min={0}
+                          placeholder={t('每次签到获得的基础奖励')}
+                          onChange={handleFieldChange('BaseCheckinReward')}
+                        />
+                      </Col>
+                      <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                        <Form.InputNumber
+                          field={'ContinuousCheckinReward'}
+                          label={t('连续签到额外奖励')}
+                          initValue={1000}
+                          min={0}
+                          placeholder={t('连续签到每天额外奖励')}
+                          onChange={handleFieldChange('ContinuousCheckinReward')}
+                        />
+                      </Col>
+                      <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                        <Form.InputNumber
+                          field={'MaxContinuousRewardDays'}
+                          label={t('最大连续奖励天数')}
+                          initValue={7}
+                          min={1}
+                          max={30}
+                          placeholder={t('连续签到奖励最多累计天数')}
+                          onChange={handleFieldChange('MaxContinuousRewardDays')}
+                        />
+                      </Col>
+                    </Row>
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                        <Form.Switch
+                          field={'CheckinStreakReset'}
+                          label={t('中断签到重置连续计数')}
+                          initValue={true}
+                          size='default'
+                          checkedText='｜'
+                          uncheckedText='〇'
+                          onChange={handleFieldChange('CheckinStreakReset')}
+                        />
+                      </Col>
+                    </Row>
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.TagInput
+                          field={'SpecialRewardDays'}
+                          label={t('特殊奖励天数')}
+                          initValue={[7, 15, 30]}
+                          placeholder={t('输入天数后按回车，如: 7, 15, 30')}
+                          validateStatus='default'
+                          showClear
+                          onChange={(value) => {
+                            // 确保输入的是数字
+                            const numericValues = value
+                              .map((v) => parseInt(v))
+                              .filter((v) => !isNaN(v) && v > 0);
+                            handleFieldChange('SpecialRewardDays')(numericValues);
+                          }}
+                          onInputExceed={() => showWarning(t('已达到最大输入数量'))}
+                          addOnBlur={true}
+                        />
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.TagInput
+                          field={'SpecialRewards'}
+                          label={t('特殊天数奖励额度')}
+                          initValue={[20000, 50000, 100000]}
+                          placeholder={t('输入奖励额度后按回车，如: 20000')}
+                          validateStatus='default'
+                          showClear
+                          onChange={(value) => {
+                            // 确保输入的是数字
+                            const numericValues = value
+                              .map((v) => parseInt(v))
+                              .filter((v) => !isNaN(v) && v > 0);
+                            handleFieldChange('SpecialRewards')(numericValues);
+                          }}
+                          onInputExceed={() => showWarning(t('已达到最大输入数量'))}
+                          addOnBlur={true}
+                        />
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Banner
+                        type='info'
+                        description={t('特殊奖励天数和奖励额度需一一对应，例如第7天奖励20000，第15天奖励50000，第30天奖励100000')}
+                        bordered
+                        fullMode={false}
+                      />
+                    </Row>
+                  </Form.Section>
+                </Col>
+              </Row>
+            )}
+            
             <Row>
               <Button size='default' onClick={onSubmit}>
                 {t('保存通用设置')}

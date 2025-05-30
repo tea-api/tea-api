@@ -44,6 +44,7 @@
   background-color: #f8f9fa;
   border: 2px solid #e9ecef;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .calendar-day.checked .day-circle {
@@ -58,6 +59,43 @@
   color: white;
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 143, 255, 0.3);
+}
+
+/* 特殊日期样式 */
+.calendar-day.special-day .day-circle {
+  border-color: #FF9500;
+  background-color: rgba(255, 149, 0, 0.1);
+}
+
+.calendar-day.special-day.checked .day-circle {
+  background-color: rgba(255, 149, 0, 0.2);
+  border-color: #FF9500;
+}
+
+.calendar-day.special-day.today .day-circle {
+  background-color: #FF9500;
+  border-color: #FF9500;
+  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+}
+
+.special-icon {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 14px;
+  color: #FF9500;
+  z-index: 2;
+}
+
+.special-marker {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #FF9500;
 }
 
 .checkin-status {
@@ -122,6 +160,35 @@
   border-radius: 12px;
 }
 
+/* 特殊奖励部分样式 */
+.special-rewards-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #e9ecef;
+}
+
+.special-rewards-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.special-reward-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+}
+
+.special-reward-item:hover {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 @keyframes pulse {
   0% {
     transform: scale(1);
@@ -133,4 +200,23 @@
   100% {
     transform: scale(1);
   }
+}
+
+/* 闪光效果动画 */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.calendar-day.special-day::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #FF9500;
+  animation: sparkle 2s infinite;
+  z-index: 1;
 }

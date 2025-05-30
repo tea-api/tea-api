@@ -19,9 +19,24 @@ func Checkin(userId int) (int, error) {
 	if last != nil && last.Date == today {
 		return last.Continuous, nil
 	}
-	if last != nil && last.Date == time.Now().AddDate(0, 0, -1).Format("2006-01-02") {
-		continuous = last.Continuous + 1
+
+	// 处理连续签到计数
+	if last != nil {
+		// 检查是否是连续签到
+		lastDate, _ := time.Parse("2006-01-02", last.Date)
+		todayDate, _ := time.Parse("2006-01-02", today)
+		daysDiff := int(todayDate.Sub(lastDate).Hours() / 24)
+
+		if daysDiff == 1 {
+			// 连续签到，增加连续天数
+			continuous = last.Continuous + 1
+		} else if daysDiff > 1 && !common.CheckinStreakReset {
+			// 如果配置了不重置连续签到，则保持原有连续天数
+			continuous = last.Continuous
+		}
+		// 其他情况保持默认值 continuous = 1 (重置签到计数)
 	}
+
 	rec := &model.CheckinRecord{
 		UserId:     userId,
 		Date:       today,
@@ -32,7 +47,7 @@ func Checkin(userId int) (int, error) {
 	}
 
 	// 计算并发放奖励
-	reward := calculateReward(continuous)
+	reward, _ := calculateReward(continuous)
 	if reward > 0 {
 		// 增加用户配额
 		if err := model.IncreaseUserQuota(userId, reward, true); err != nil {
@@ -63,9 +78,11 @@ func GetCheckinStatus(userId int) (bool, int, error) {
 }
 
 // calculateReward 计算签到奖励
-func calculateReward(continuous int) int {
+// 返回总奖励和是否命中特殊奖励
+func calculateReward(continuous int) (int, bool) {
 	// 基础奖励
 	reward := common.BaseCheckinReward
+	hitSpecial := false
 
 	// 连续签到额外奖励
 	if continuous > 1 {
@@ -77,5 +94,30 @@ func calculateReward(continuous int) int {
 		reward += extraDays * common.ContinuousCheckinReward
 	}
 
-	return reward
+	// 检查是否命中特殊奖励日
+	for i, day := range common.SpecialRewardDays {
+		if continuous == day && i < len(common.SpecialRewards) {
+			reward += common.SpecialRewards[i]
+			hitSpecial = true
+			break
+		}
+	}
+
+	return reward, hitSpecial
+}
+
+// GetCheckinRewardInfo 获取签到奖励信息
+func GetCheckinRewardInfo(continuous int) map[string]interface{} {
+	reward, isSpecial := calculateReward(continuous)
+
+	return map[string]interface{}{
+		"reward":              reward,
+		"is_special_reward":   isSpecial,
+		"base_reward":         common.BaseCheckinReward,
+		"continuous_reward":   common.ContinuousCheckinReward,
+		"max_continuous_days": common.MaxContinuousRewardDays,
+		"special_days":        common.SpecialRewardDays,
+		"special_rewards":     common.SpecialRewards,
+		"streak_reset":        common.CheckinStreakReset,
+	}
 }

@@ -31,9 +31,12 @@ var DefaultCollapseSidebar = false // default value of collapse sidebar
 var CheckinEnabled = false
 
 // 签到奖励配置
-var BaseCheckinReward = 10000      // 基础签到奖励
-var ContinuousCheckinReward = 1000 // 连续签到额外奖励（每天）
-var MaxContinuousRewardDays = 7    // 连续签到奖励上限天数
+var BaseCheckinReward = 10000                    // 基础签到奖励
+var ContinuousCheckinReward = 1000               // 连续签到额外奖励（每天）
+var MaxContinuousRewardDays = 7                  // 连续签到奖励上限天数
+var SpecialRewardDays = []int{7, 15, 30}         // 特殊奖励天数
+var SpecialRewards = []int{20000, 50000, 100000} // 特殊天数奖励额度
+var CheckinStreakReset = true                    // 连续签到中断是否重置计数
 
 // Any options with "Secret", "Token" in its key won't be return by GetOptions
 

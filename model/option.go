@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"tea-api/common"
@@ -52,6 +53,7 @@ func InitOptionMap() {
 	common.OptionMap["BaseCheckinReward"] = strconv.Itoa(common.BaseCheckinReward)
 	common.OptionMap["ContinuousCheckinReward"] = strconv.Itoa(common.ContinuousCheckinReward)
 	common.OptionMap["MaxContinuousRewardDays"] = strconv.Itoa(common.MaxContinuousRewardDays)
+	common.OptionMap["CheckinStreakReset"] = strconv.FormatBool(common.CheckinStreakReset)
 	common.OptionMap["ChannelDisableThreshold"] = strconv.FormatFloat(common.ChannelDisableThreshold, 'f', -1, 64)
 	common.OptionMap["EmailDomainRestrictionEnabled"] = strconv.FormatBool(common.EmailDomainRestrictionEnabled)
 	common.OptionMap["EmailAliasRestrictionEnabled"] = strconv.FormatBool(common.EmailAliasRestrictionEnabled)
@@ -126,6 +128,12 @@ func InitOptionMap() {
 	common.OptionMap["SensitiveWords"] = setting.SensitiveWordsToString()
 	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(setting.StreamCacheQueueLength)
 	common.OptionMap["AutomaticDisableKeywords"] = operation_setting.AutomaticDisableKeywordsToString()
+
+	// 特殊奖励日和奖励需要序列化为JSON
+	specialDaysBytes, _ := json.Marshal(common.SpecialRewardDays)
+	specialRewardsBytes, _ := json.Marshal(common.SpecialRewards)
+	common.OptionMap["SpecialRewardDays"] = string(specialDaysBytes)
+	common.OptionMap["SpecialRewards"] = string(specialRewardsBytes)
 
 	// 自动添加所有注册的模型配置
 	modelConfigs := config.GlobalConfig.ExportAllConfigs()
@@ -384,6 +392,18 @@ func updateOptionMap(key string, value string) (err error) {
 		operation_setting.AutomaticDisableKeywordsFromString(value)
 	case "StreamCacheQueueLength":
 		setting.StreamCacheQueueLength, _ = strconv.Atoi(value)
+	case "CheckinStreakReset":
+		common.CheckinStreakReset, _ = strconv.ParseBool(value)
+	case "SpecialRewardDays":
+		var days []int
+		if err := json.Unmarshal([]byte(value), &days); err == nil {
+			common.SpecialRewardDays = days
+		}
+	case "SpecialRewards":
+		var rewards []int
+		if err := json.Unmarshal([]byte(value), &rewards); err == nil {
+			common.SpecialRewards = rewards
+		}
 	}
 	return err
 }

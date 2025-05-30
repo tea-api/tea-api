@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Spin, Typography, Space, Badge } from '@douyinfe/semi-ui';
-import { IconTickCircle, IconCalendar, IconGift } from '@douyinfe/semi-icons';
+import { Button, Card, Spin, Typography, Space, Badge, Tag, Tooltip } from '@douyinfe/semi-ui';
+import { IconTickCircle, IconCalendar, IconGift, IconCrown, IconHelpCircle } from '@douyinfe/semi-icons';
 import { API, showError, showSuccess } from '../../helpers';
 import { useTranslation } from 'react-i18next';
 import './style.css';
@@ -17,6 +17,10 @@ const Checkin = () => {
   const [continuousReward, setContinuousReward] = useState(1000);
   const [maxDays, setMaxDays] = useState(7);
   const [animate, setAnimate] = useState(false);
+  const [specialRewards, setSpecialRewards] = useState([]);
+  const [weeklyBonus, setWeeklyBonus] = useState(0);
+  const [monthlyBonus, setMonthlyBonus] = useState(0);
+  const [specialDays, setSpecialDays] = useState([]);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -36,6 +40,18 @@ const Checkin = () => {
             setBaseReward(data.checkin_config.base_reward || 10000);
             setContinuousReward(data.checkin_config.continuous_reward || 1000);
             setMaxDays(data.checkin_config.max_days || 7);
+            setWeeklyBonus(data.checkin_config.weekly_bonus || 20000);
+            setMonthlyBonus(data.checkin_config.monthly_bonus || 50000);
+            
+            // 设置特殊日期奖励
+            if (data.checkin_config.special_rewards) {
+              setSpecialRewards(data.checkin_config.special_rewards);
+            }
+            
+            // 设置特殊日期
+            if (data.checkin_config.special_days) {
+              setSpecialDays(data.checkin_config.special_days);
+            }
           }
         }
 
@@ -45,7 +61,10 @@ const Checkin = () => {
         if (success) {
           if (data.checked_today) {
             setDays(data.continuous);
+            setReward(data.reward);
             setDone(true);
+          } else {
+            setDays(data.continuous || 0);
           }
         }
       } catch (err) {
@@ -67,7 +86,12 @@ const Checkin = () => {
         setReward(data.reward);
         setDone(true);
         setAnimate(true);
-        showSuccess(t('签到成功') + `，获得 ${data.reward.toLocaleString()} 配额`);
+        
+        let rewardMessage = t('签到成功') + `，获得 ${data.reward.toLocaleString()} 配额`;
+        if (data.special_reward) {
+          rewardMessage += `，额外获得${data.special_reward.name}奖励！`;
+        }
+        showSuccess(rewardMessage);
         
         // 3秒后停止动画
         setTimeout(() => {
@@ -85,17 +109,27 @@ const Checkin = () => {
     return quota ? quota.toLocaleString() : '0';
   };
 
+  // 检查是否是特殊日期
+  const isSpecialDay = (day) => {
+    return specialDays.includes(day);
+  };
+
   // 生成签到日历
   const renderCalendar = () => {
     const calendar = [];
     for (let i = 1; i <= maxDays; i++) {
+      const isSpecial = isSpecialDay(i);
       calendar.push(
-        <div key={i} className={`calendar-day ${i <= days ? 'checked' : ''} ${i === days && done ? 'today' : ''}`}>
-          <Badge dot={i <= days} type="primary">
+        <div key={i} className={`calendar-day ${i <= days ? 'checked' : ''} ${i === days && done ? 'today' : ''} ${isSpecial ? 'special-day' : ''}`}>
+          <Badge dot={i <= days} type={isSpecial ? "danger" : "primary"}>
             <div className="day-circle">
+              {isSpecial && <IconCrown className="special-icon" />}
               {i <= days ? <IconTickCircle /> : i}
             </div>
           </Badge>
+          {isSpecial && (
+            <div className="special-marker"></div>
+          )}
         </div>
       );
     }
@@ -123,12 +157,10 @@ const Checkin = () => {
           </div>
           
           <div className="checkin-status">
-            {days ? (
+            {days !== null && (
               <Text strong className="checkin-days">
                 已连续签到 <span className="highlight">{days}</span> 天
               </Text>
-            ) : (
-              <Text strong>快来签到吧！</Text>
             )}
             
             {done && reward > 0 && (
@@ -162,6 +194,35 @@ const Checkin = () => {
               <Text>2. 连续签到：连续签到每天额外奖励 <span className="highlight">{formatQuota(continuousReward)}</span> 配额</Text>
               <Text>3. 最大累计：连续签到奖励最多累计 <span className="highlight">{maxDays}</span> 天</Text>
               <Text>4. 中断计算：如果中断签到，连续天数将重新计算</Text>
+              
+              <div className="special-rewards-section">
+                <Text strong style={{ display: 'flex', alignItems: 'center' }}>
+                  <IconCrown style={{ marginRight: '8px', color: '#FF9500' }} />
+                  特殊奖励
+                </Text>
+                <div className="special-rewards-list">
+                  <div className="special-reward-item">
+                    <Tag color="blue" size="large">周奖励</Tag>
+                    <Text>连续签到7天可获得额外 <span className="highlight">{formatQuota(weeklyBonus)}</span> 配额</Text>
+                  </div>
+                  <div className="special-reward-item">
+                    <Tag color="purple" size="large">月奖励</Tag>
+                    <Text>连续签到30天可获得额外 <span className="highlight">{formatQuota(monthlyBonus)}</span> 配额</Text>
+                  </div>
+                  
+                  {specialRewards.length > 0 && specialRewards.map((reward, index) => (
+                    <div key={index} className="special-reward-item">
+                      <Tag color="orange" size="large">
+                        {reward.name}
+                        <Tooltip content={reward.description}>
+                          <IconHelpCircle style={{ marginLeft: '4px' }} />
+                        </Tooltip>
+                      </Tag>
+                      <Text>{reward.description}</Text>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </Space>
           </Card>
         </Space>

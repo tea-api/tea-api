@@ -21,6 +21,7 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.POST("/checkin", middleware.UserAuth(), controller.Checkin)
 		apiRouter.GET("/checkin/status", middleware.UserAuth(), controller.GetCheckinStatus)
 		apiRouter.GET("/checkin/config", middleware.UserAuth(), controller.GetCheckinConfig)
+		apiRouter.POST("/checkin/config", middleware.AdminAuth(), controller.UpdateCheckinConfig)
 		apiRouter.GET("/notice", controller.GetNotice)
 		apiRouter.GET("/about", controller.GetAbout)
 		//apiRouter.GET("/midjourney", controller.GetMidjourney)
