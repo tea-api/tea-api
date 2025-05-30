@@ -1,0 +1,109 @@
+.setting-container {
+  width: 100%;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.setting-layout {
+  height: 100%;
+  overflow: hidden;
+}
+
+.setting-sider {
+  background-color: #fff;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+  z-index: 2;
+}
+
+.setting-logo {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.setting-logo span {
+  margin-left: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.setting-header {
+  background-color: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 1;
+}
+
+.setting-content {
+  padding: 24px;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.setting-scroll-container {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* 美化滚动条 */
+.setting-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.setting-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+.setting-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.setting-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 卡片样式改进 */
+.setting-content .semi-card {
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.setting-content .semi-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.setting-content .semi-card-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+
+.setting-content .semi-card-body {
+  padding: 20px;
+}
+
+/* 表单样式改进 */
+.setting-content .semi-form-field {
+  margin-bottom: 20px;
+}
+
+.setting-content .semi-form-field-label {
+  font-weight: 500;
+}
+
+.setting-content .semi-button {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.setting-content .semi-button-primary:not(.semi-button-disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 143, 255, 0.2);
+}

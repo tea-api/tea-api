@@ -30,6 +30,11 @@ var DefaultCollapseSidebar = false // default value of collapse sidebar
 // Enable daily check-in feature
 var CheckinEnabled = false
 
+// 签到奖励配置
+var BaseCheckinReward = 10000      // 基础签到奖励
+var ContinuousCheckinReward = 1000 // 连续签到额外奖励（每天）
+var MaxContinuousRewardDays = 7    // 连续签到奖励上限天数
+
 // Any options with "Secret", "Token" in its key won't be return by GetOptions
 
 var SessionSecret = uuid.New().String()
@@ -207,12 +212,11 @@ const (
 	ChannelTypeOhMyGPT        = 7
 	ChannelTypeCustom         = 8
 	ChannelTypeAILS           = 9
-	ChannelTypeAIProxy        = 10
-	ChannelTypePaLM           = 11
 	ChannelTypeAPI2GPT        = 12
 	ChannelTypeAIGC2D         = 13
 	ChannelTypeAnthropic      = 14
 	ChannelTypeBaidu          = 15
+	ChannelTypePaLM           = 28
 	ChannelTypeZhipu          = 16
 	ChannelTypeAli            = 17
 	ChannelTypeXunfei         = 18
@@ -276,26 +280,26 @@ var ChannelBaseURLs = []string{
 	"https://api.moonshot.cn",                   //25
 	"https://open.bigmodel.cn",                  //26
 	"https://api.perplexity.ai",                 //27
-	"",                                          //28
-	"",                                          //29
-	"",                                          //30
-	"https://api.lingyiwanwu.com",               //31
-	"",                                          //32
-	"",                                          //33
-	"https://api.cohere.ai",                     //34
-	"https://api.minimax.chat",                  //35
-	"",                                          //36
-	"https://api.dify.ai",                       //37
-	"https://api.jina.ai",                       //38
-	"https://api.cloudflare.com",                //39
-	"https://api.siliconflow.cn",                //40
-	"",                                          //41
-	"https://api.mistral.ai",                    //42
-	"https://api.deepseek.com",                  //43
-	"https://api.moka.ai",                       //44
-	"https://ark.cn-beijing.volces.com",         //45
-	"https://qianfan.baidubce.com",              //46
-	"",                                          //47
-	"https://api.x.ai",                          //48
-	"https://api.coze.cn",                       //49
+	"https://generativelanguage.googleapis.com", //28
+	"",                                  //29
+	"",                                  //30
+	"https://api.lingyiwanwu.com",       //31
+	"",                                  //32
+	"",                                  //33
+	"https://api.cohere.ai",             //34
+	"https://api.minimax.chat",          //35
+	"",                                  //36
+	"https://api.dify.ai",               //37
+	"https://api.jina.ai",               //38
+	"https://api.cloudflare.com",        //39
+	"https://api.siliconflow.cn",        //40
+	"",                                  //41
+	"https://api.mistral.ai",            //42
+	"https://api.deepseek.com",          //43
+	"https://api.moka.ai",               //44
+	"https://ark.cn-beijing.volces.com", //45
+	"https://qianfan.baidubce.com",      //46
+	"",                                  //47
+	"https://api.x.ai",                  //48
+	"https://api.coze.cn",               //49
 }

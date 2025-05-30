@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"tea-api/common"
 	"tea-api/model"
 	"tea-api/service"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -320,7 +320,7 @@ func updateChannelBalance(channel *model.Channel) (float64, error) {
 		baseURL = channel.GetBaseURL()
 	//case common.ChannelTypeOpenAISB:
 	//	return updateChannelOpenAISBBalance(channel)
-	case common.ChannelTypeAIProxy:
+	case common.ChannelTypeAIProxyLibrary:
 		return updateChannelAIProxyBalance(channel)
 	case common.ChannelTypeAPI2GPT:
 		return updateChannelAPI2GPTBalance(channel)

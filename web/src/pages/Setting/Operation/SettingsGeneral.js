@@ -33,6 +33,9 @@ export default function GeneralSettings(props) {
     DemoSiteEnabled: false,
     SelfUseModeEnabled: false,
     CheckinEnabled: false,
+    BaseCheckinReward: '',
+    ContinuousCheckinReward: '',
+    MaxContinuousRewardDays: '',
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
@@ -44,20 +47,35 @@ export default function GeneralSettings(props) {
   }
 
   function onSubmit() {
-    const updateArray = compareObjects(inputs, inputsRow);
+    // 创建一个更新项目的数组
+    let updateArray = [];
+    
+    // 遍历所有输入项，检查是否有变化
+    for (const key in inputs) {
+      if (inputs[key] !== inputsRow[key]) {
+        updateArray.push({
+          key: key,
+          oldValue: inputsRow[key],
+          newValue: inputs[key]
+        });
+      }
+    }
+    
     if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
+    
     const requestQueue = updateArray.map((item) => {
       let value = '';
-      if (typeof inputs[item.key] === 'boolean') {
-        value = String(inputs[item.key]);
+      if (typeof item.newValue === 'boolean') {
+        value = String(item.newValue);
       } else {
-        value = inputs[item.key];
+        value = item.newValue;
       }
       return API.put('/api/option/', {
         key: item.key,
         value,
       });
     });
+    
     setLoading(true);
     Promise.all(requestQueue)
       .then((res) => {

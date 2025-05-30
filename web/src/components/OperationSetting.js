@@ -60,6 +60,10 @@ const OperationSetting = () => {
     Chats: '[]',
     DemoSiteEnabled: false,
     SelfUseModeEnabled: false,
+    CheckinEnabled: false, // 添加签到启用状态
+    BaseCheckinReward: 10000, // 添加基础签到奖励
+    ContinuousCheckinReward: 1000, // 添加连续签到奖励
+    MaxContinuousRewardDays: 7, // 添加连续签到最大天数
     AutomaticDisableKeywords: '',
   });
 

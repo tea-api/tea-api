@@ -2,11 +2,11 @@ package model
 
 import (
 	"log"
-	"tea-api/common"
-	"tea-api/constant"
 	"os"
 	"strings"
 	"sync"
+	"tea-api/common"
+	"tea-api/constant"
 	"time"
 
 	"github.com/glebarez/sqlite"
@@ -239,6 +239,10 @@ func migrateDB() error {
 		return err
 	}
 	err = DB.AutoMigrate(&Task{})
+	if err != nil {
+		return err
+	}
+	err = DB.AutoMigrate(&CheckinRecord{})
 	if err != nil {
 		return err
 	}
