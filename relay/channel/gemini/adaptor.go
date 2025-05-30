@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"tea-api/common"
 	"tea-api/dto"
 	"tea-api/relay/channel"
 	relaycommon "tea-api/relay/common"
 	"tea-api/service"
 	"tea-api/setting/model_setting"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,8 +22,7 @@ type Adaptor struct {
 
 func (a *Adaptor) ConvertClaudeRequest(*gin.Context, *relaycommon.RelayInfo, *dto.ClaudeRequest) (any, error) {
 	//TODO implement me
-	panic("implement me")
-	return nil, nil
+	return nil, errors.New("not implemented")
 }
 
 func (a *Adaptor) ConvertAudioRequest(c *gin.Context, info *relaycommon.RelayInfo, request dto.AudioRequest) (io.Reader, error) {
