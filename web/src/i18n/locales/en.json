@@ -1350,7 +1350,7 @@
   "示例：{\"default\": [200, 100], \"vip\": [0, 1000]}。": "Example: {\"default\": [200, 100], \"vip\": [0, 1000]}",
   "[最多请求次数]必须大于等于0，[最多请求完成次数]必须大于等于1。": "[Max request times] must be >= 0, and [max completed request times] must be >= 1.",
   "分组速率配置优先级高于全局速率限制。": "Group rate configuration priority is higher than the global rate limit.",
-  "限制周期统一使用上方配置的“限制周期”值。": "The limit period uses the 'Limit period' value configured above.",
+  "限制周期统一使用上方配置的"限制周期"值。": "The limit period uses the 'Limit period' value configured above.",
   "获取启用模型失败:": "Failed to get enabled models:",
   "获取启用模型失败": "Failed to get enabled models",
   "JSON解析错误:": "JSON parsing error:",
@@ -1442,5 +1442,9 @@
   "Actual output price": "Actual output price",
   "Price Unit": "Price Unit",
   "Edit Price": "Edit Price",
-  "Save Price": "Save Price"
+  "Save Price": "Save Price",
+  "每用户最多可用次数": "Maximum uses per user",
+  "每用户最多使用次数": "Maximum uses per user",
+  "每个用户最多可使用该兑换码的次数": "Maximum number of times each user can use this redemption code",
+  "您已达到该兑换码的最大使用次数": "You have reached the maximum number of uses for this redemption code"
 }

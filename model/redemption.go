@@ -20,6 +20,7 @@ type Redemption struct {
 	RedeemedTime int64          `json:"redeemed_time" gorm:"bigint"`
 	MaxTimes     int            `json:"max_times" gorm:"default:1"`
 	UsedTimes    int            `json:"used_times" gorm:"default:0"`
+	MaxUserTimes int            `json:"max_user_times" gorm:"default:1"`
 	ExpiredTime  int64          `json:"expired_time" gorm:"bigint;default:-1"`
 	Count        int            `json:"count" gorm:"-:all"` // only for api request
 	UsedUserId   int            `json:"used_user_id"`
@@ -145,6 +146,23 @@ func Redeem(key string, userId int) (quota int, err error) {
 			tx.Save(redemption)
 			return errors.New("该兑换码已被使用")
 		}
+
+		// 检查用户使用该兑换码的次数是否超过限制
+		var userUsedCount int64
+		err = tx.Model(&Log{}).
+			Where("user_id = ? AND type = ? AND content LIKE ?",
+				userId,
+				LogTypeTopup,
+				fmt.Sprintf("%%兑换码ID %d", redemption.Id)).
+			Count(&userUsedCount).Error
+		if err != nil {
+			return err
+		}
+
+		if int(userUsedCount) >= redemption.MaxUserTimes {
+			return errors.New("您已达到该兑换码的最大使用次数")
+		}
+
 		err = tx.Model(&User{}).Where("id = ?", userId).Update("quota", gorm.Expr("quota + ?", redemption.Quota)).Error
 		if err != nil {
 			return err
@@ -179,7 +197,7 @@ func (redemption *Redemption) SelectUpdate() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (redemption *Redemption) Update() error {
 	var err error
-	err = DB.Model(redemption).Select("name", "status", "quota", "redeemed_time", "max_times", "expired_time").Updates(redemption).Error
+	err = DB.Model(redemption).Select("name", "status", "quota", "redeemed_time", "max_times", "max_user_times", "expired_time").Updates(redemption).Error
 	return err
 }
 
@@ -199,4 +217,27 @@ func DeleteRedemptionById(id int) (err error) {
 		return err
 	}
 	return redemption.Delete()
+}
+
+// GetUserRedemptionCount 获取指定用户使用某个兑换码的次数
+func GetUserRedemptionCount(userId int, redemptionId int) (count int, err error) {
+	if userId == 0 || redemptionId == 0 {
+		return 0, errors.New("参数错误")
+	}
+
+	var cnt int64
+
+	// 查询指定用户使用该兑换码的记录数
+	err = DB.Model(&Log{}).
+		Where("user_id = ? AND type = ? AND content LIKE ?",
+			userId,
+			LogTypeTopup,
+			fmt.Sprintf("%%兑换码ID %d", redemptionId)).
+		Count(&cnt).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int(cnt), nil
 }
