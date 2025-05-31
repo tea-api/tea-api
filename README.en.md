@@ -20,7 +20,7 @@ Many features that were not planned to be added in the original version have bee
 - [Features](#Features)
 - [Migration](#Migration)
 - [Deployment](#Deployment)
-- [Environment Variables](#Environment Variables)
+- [EnvironmentVariables](#Environment Variables)
 - [Star History](#-star-history)
 - [License](#license)
 
