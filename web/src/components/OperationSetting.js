@@ -95,11 +95,19 @@ const OperationSetting = () => {
           try {
             item.value = JSON.parse(item.value);
             if (!Array.isArray(item.value)) {
-              item.value = [];
+              if (item.key === 'SpecialRewardDays') {
+                item.value = [7, 15, 30]; // 默认值
+              } else {
+                item.value = [20000, 50000, 100000]; // 默认值
+              }
             }
           } catch (error) {
             console.error('failed to parse option', item.key, error);
-            item.value = [];
+            if (item.key === 'SpecialRewardDays') {
+              item.value = [7, 15, 30]; // 默认值
+            } else {
+              item.value = [20000, 50000, 100000]; // 默认值
+            }
           }
         }
         if (
