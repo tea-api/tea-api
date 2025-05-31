@@ -220,3 +220,56 @@
   animation: sparkle 2s infinite;
   z-index: 1;
 }
+
+/* 暗黑模式适配 */
+body[theme-mode="dark"] .checkin-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+body[theme-mode="dark"] .day-circle {
+  background-color: var(--semi-color-bg-2);
+  border-color: var(--semi-color-border);
+}
+
+body[theme-mode="dark"] .calendar-day.checked .day-circle {
+  background-color: rgba(0, 143, 255, 0.2);
+  border-color: rgba(0, 143, 255, 0.6);
+}
+
+body[theme-mode="dark"] .calendar-day.today .day-circle {
+  background-color: #008fff;
+  border-color: #008fff;
+  box-shadow: 0 4px 12px rgba(0, 143, 255, 0.4);
+}
+
+body[theme-mode="dark"] .calendar-day.special-day .day-circle {
+  border-color: #FF9500;
+  background-color: rgba(255, 149, 0, 0.2);
+}
+
+body[theme-mode="dark"] .calendar-day.special-day.checked .day-circle {
+  background-color: rgba(255, 149, 0, 0.3);
+}
+
+body[theme-mode="dark"] .calendar-day.special-day.today .day-circle {
+  background-color: #FF9500;
+  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.4);
+}
+
+body[theme-mode="dark"] .reward-container {
+  background-color: rgba(12, 187, 82, 0.15);
+}
+
+body[theme-mode="dark"] .reward-rules {
+  background-color: var(--semi-color-bg-1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body[theme-mode="dark"] .special-reward-item {
+  background-color: var(--semi-color-bg-2);
+}
+
+body[theme-mode="dark"] .special-reward-item:hover {
+  background-color: var(--semi-color-bg-3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
