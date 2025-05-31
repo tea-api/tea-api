@@ -2,10 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"tea-api/model"
 	"tea-api/setting"
 	"tea-api/setting/operation_setting"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetPricing(c *gin.Context) {
@@ -131,6 +132,20 @@ func UpdateModelPricing(c *gin.Context) {
 	}
 	if err := model.UpdateOption("ModelPrice", string(priceBytes)); err != nil {
 		c.JSON(200, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	// 更新内存中的模型比率和补全比率
+	if err := operation_setting.UpdateModelRatioByJSONString(string(ratioBytes)); err != nil {
+		c.JSON(200, gin.H{"success": false, "message": "保存到数据库成功，但更新内存失败: " + err.Error()})
+		return
+	}
+	if err := operation_setting.UpdateCompletionRatioByJSONString(string(compBytes)); err != nil {
+		c.JSON(200, gin.H{"success": false, "message": "保存到数据库成功，但更新内存失败: " + err.Error()})
+		return
+	}
+	if err := operation_setting.UpdateModelPriceByJSONString(string(priceBytes)); err != nil {
+		c.JSON(200, gin.H{"success": false, "message": "保存到数据库成功，但更新内存失败: " + err.Error()})
 		return
 	}
 
