@@ -70,6 +70,9 @@ const ModelPricing = () => {
   };
 
   const openEdit = (record) => {
+    // 先设置单位为默认值
+    setPriceUnit('1k');
+    
     // 使用与后端一致的基准价格计算方式
     const basePerM = 2.0;
     const base = basePerM / 1000; // 转换为每千 tokens 的价格
@@ -77,17 +80,15 @@ const ModelPricing = () => {
     // 根据模型类型设置初始价格
     if (record.quota_type === 0) {
       // 按量计费模型
+      // 显示原始倍率对应的价格
       setInputPrice((record.model_ratio * base).toFixed(3));
-      setOutputPrice(
-        (record.model_ratio * record.completion_ratio * base).toFixed(3),
-      );
+      setOutputPrice((record.model_ratio * record.completion_ratio * base).toFixed(3));
     } else {
       // 按次计费模型
       setInputPrice(record.model_price.toFixed(3));
       setOutputPrice('0');
     }
     
-    setPriceUnit('1k');
     setEditModel(record);
     setEditVisible(true);
   };
@@ -103,7 +104,7 @@ const ModelPricing = () => {
     if (res.data.success) {
       showSuccess(t('保存成功'));
       setEditVisible(false);
-      refresh();
+      await refresh();
     } else {
       showError(res.data.message);
     }
@@ -408,6 +409,90 @@ const ModelPricing = () => {
     refresh().then();
   }, []);
 
+  // 处理单位切换
+  const handleUnitChange = (value) => {
+    if (!editModel) return;
+    
+    const oldUnit = priceUnit;
+    const newUnit = value;
+    
+    // 如果单位不同，需要转换价格
+    if (oldUnit !== newUnit) {
+      const currentInputPrice = parseFloat(inputPrice);
+      const currentOutputPrice = parseFloat(outputPrice);
+      
+      let newInputPrice, newOutputPrice;
+      
+      if (oldUnit === '1k' && newUnit === '1m') {
+        // 从1k转换到1M，价格乘以1000
+        newInputPrice = (currentInputPrice * 1000).toFixed(3);
+        newOutputPrice = (currentOutputPrice * 1000).toFixed(3);
+      } else if (oldUnit === '1m' && newUnit === '1k') {
+        // 从1M转换到1k，价格除以1000
+        newInputPrice = (currentInputPrice / 1000).toFixed(3);
+        newOutputPrice = (currentOutputPrice / 1000).toFixed(3);
+      }
+      
+      setInputPrice(newInputPrice);
+      setOutputPrice(newOutputPrice);
+      
+      // 计算并显示补全倍率
+      const inputVal = parseFloat(newInputPrice);
+      const outputVal = parseFloat(newOutputPrice);
+      
+      if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
+        const ratio = outputVal / inputVal;
+        if (inputVal === outputVal && inputVal !== 0) {
+          showInfo(t('输入输出价格相同，补全倍率将自动设为1'));
+        } else {
+          showInfo(t('当前设置的补全倍率为: {{ratio}}', {
+            ratio: ratio.toFixed(3)
+          }));
+        }
+      }
+    }
+    
+    setPriceUnit(value);
+  };
+
+  // 处理输入价格变化
+  const handleInputPriceChange = (value) => {
+    setInputPrice(value);
+    // 计算并显示补全倍率
+    const inputVal = parseFloat(value);
+    const outputVal = parseFloat(outputPrice);
+    
+    if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
+      const ratio = outputVal / inputVal;
+      if (inputVal === outputVal) {
+        showInfo(t('输入输出价格相同，补全倍率将自动设为1'));
+      } else {
+        showInfo(t('当前设置的补全倍率为: {{ratio}}', {
+          ratio: ratio.toFixed(3)
+        }));
+      }
+    }
+  };
+  
+  // 处理输出价格变化
+  const handleOutputPriceChange = (value) => {
+    setOutputPrice(value);
+    // 计算并显示补全倍率
+    const inputVal = parseFloat(inputPrice);
+    const outputVal = parseFloat(value);
+    
+    if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
+      const ratio = outputVal / inputVal;
+      if (inputVal === outputVal) {
+        showInfo(t('输入输出价格相同，补全倍率将自动设为1'));
+      } else {
+        showInfo(t('当前设置的补全倍率为: {{ratio}}', {
+          ratio: ratio.toFixed(3)
+        }));
+      }
+    }
+  };
+
   return (
     <>
       <Layout>
@@ -492,7 +577,7 @@ const ModelPricing = () => {
           <RadioGroup
             type='button'
             value={priceUnit}
-            onChange={(e) => setPriceUnit(e.target.value)}
+            onChange={(e) => handleUnitChange(e.target.value)}
             style={{ marginBottom: 12 }}
           >
             <Radio value='1k'>/1k tokens</Radio>
@@ -500,17 +585,45 @@ const ModelPricing = () => {
           </RadioGroup>
           <Input
             value={inputPrice}
-            onChange={setInputPrice}
+            onChange={handleInputPriceChange}
             suffix={`$/1${priceUnit === '1k' ? 'k' : 'M'} tokens`}
             label={t('实际输入价格')}
           />
           <Input
             value={outputPrice}
-            onChange={setOutputPrice}
+            onChange={handleOutputPriceChange}
             suffix={`$/1${priceUnit === '1k' ? 'k' : 'M'} tokens`}
             label={t('实际输出价格')}
             style={{ marginTop: 12 }}
           />
+          {(() => {
+            const inputVal = parseFloat(inputPrice);
+            const outputVal = parseFloat(outputPrice);
+            
+            if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
+              const ratio = outputVal / inputVal;
+              if (inputVal === outputVal) {
+                return (
+                  <Banner
+                    type='info'
+                    description={t('输入输出价格相同，补全倍率将自动设为1')}
+                    style={{ marginTop: 12 }}
+                  />
+                );
+              } else {
+                return (
+                  <Banner
+                    type='info'
+                    description={t('当前补全倍率为: {{ratio}}', {
+                      ratio: ratio.toFixed(3)
+                    })}
+                    style={{ marginTop: 12 }}
+                  />
+                );
+              }
+            }
+            return null;
+          })()}
         </Modal>
         <ImagePreview
           src={modalImageUrl}

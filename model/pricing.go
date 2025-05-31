@@ -1,9 +1,9 @@
 package model
 
 import (
+	"sync"
 	"tea-api/common"
 	"tea-api/setting/operation_setting"
-	"sync"
 	"time"
 )
 
@@ -42,6 +42,17 @@ func GetPricing() []Pricing {
 	//	return userPricingMap
 	//}
 	return pricingMap
+}
+
+// ClearPricingCache 清除价格缓存，强制下次获取时重新加载
+func ClearPricingCache() {
+	updatePricingLock.Lock()
+	defer updatePricingLock.Unlock()
+
+	// 重置缓存时间，强制下次获取时更新
+	lastGetPricingTime = time.Time{}
+	// 清空缓存数据
+	pricingMap = nil
 }
 
 func updatePricing() {

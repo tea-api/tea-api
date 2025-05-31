@@ -94,7 +94,12 @@ func UpdateModelPricing(c *gin.Context) {
 	}
 	completionRatio := 0.0
 	if inputPerM != 0 {
-		completionRatio = outputPerM / inputPerM
+		// 当输入价格和输出价格相同时，补全倍率应为1
+		if inputPerM == outputPerM {
+			completionRatio = 1.0
+		} else {
+			completionRatio = outputPerM / inputPerM
+		}
 	}
 
 	// 获取当前模型信息，确定是按量计费还是按次计费
@@ -138,6 +143,22 @@ func UpdateModelPricing(c *gin.Context) {
 
 	priceBytes, _ := json.Marshal(newPriceMap)
 
+	// 先更新内存中的数据，确保立即生效
+	// 更新内存中的模型比率和补全比率
+	if err := operation_setting.UpdateModelRatioByJSONString(string(ratioBytes)); err != nil {
+		c.JSON(200, gin.H{"success": false, "message": "更新内存失败: " + err.Error()})
+		return
+	}
+	if err := operation_setting.UpdateCompletionRatioByJSONString(string(compBytes)); err != nil {
+		c.JSON(200, gin.H{"success": false, "message": "更新内存失败: " + err.Error()})
+		return
+	}
+	if err := operation_setting.UpdateModelPriceByJSONString(string(priceBytes)); err != nil {
+		c.JSON(200, gin.H{"success": false, "message": "更新内存失败: " + err.Error()})
+		return
+	}
+
+	// 然后更新数据库
 	if err := model.UpdateOption("ModelRatio", string(ratioBytes)); err != nil {
 		c.JSON(200, gin.H{"success": false, "message": err.Error()})
 		return
@@ -151,19 +172,8 @@ func UpdateModelPricing(c *gin.Context) {
 		return
 	}
 
-	// 更新内存中的模型比率和补全比率
-	if err := operation_setting.UpdateModelRatioByJSONString(string(ratioBytes)); err != nil {
-		c.JSON(200, gin.H{"success": false, "message": "保存到数据库成功，但更新内存失败: " + err.Error()})
-		return
-	}
-	if err := operation_setting.UpdateCompletionRatioByJSONString(string(compBytes)); err != nil {
-		c.JSON(200, gin.H{"success": false, "message": "保存到数据库成功，但更新内存失败: " + err.Error()})
-		return
-	}
-	if err := operation_setting.UpdateModelPriceByJSONString(string(priceBytes)); err != nil {
-		c.JSON(200, gin.H{"success": false, "message": "保存到数据库成功，但更新内存失败: " + err.Error()})
-		return
-	}
+	// 强制清除缓存，确保下次获取价格时是最新的
+	model.ClearPricingCache()
 
 	c.JSON(200, gin.H{"success": true})
 }
