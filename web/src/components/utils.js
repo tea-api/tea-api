@@ -41,6 +41,14 @@ export async function onGitHubOAuthClicked(github_client_id) {
 export async function onLinuxDOOAuthClicked(linuxdo_client_id) {
   const state = await getOAuthState();
   if (!state) return;
+  
+  console.log('Linux DO OAuth clicked, client_id:', linuxdo_client_id);
+  
+  if (!linuxdo_client_id) {
+    console.error('Linux DO client ID is undefined!');
+    return;
+  }
+  
   window.open(
     `https://connect.linux.do/oauth2/authorize?response_type=code&client_id=${linuxdo_client_id}&state=${state}`,
   );
