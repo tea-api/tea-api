@@ -27,6 +27,7 @@ func SetApiRouter(router *gin.Engine) {
 		//apiRouter.GET("/midjourney", controller.GetMidjourney)
 		apiRouter.GET("/home_page_content", controller.GetHomePageContent)
 		apiRouter.GET("/pricing", middleware.TryUserAuth(), controller.GetPricing)
+		apiRouter.PUT("/pricing", middleware.AdminAuth(), controller.UpdateModelPricing)
 		apiRouter.GET("/verification", middleware.CriticalRateLimit(), middleware.TurnstileCheck(), controller.SendEmailVerification)
 		apiRouter.GET("/reset_password", middleware.CriticalRateLimit(), middleware.TurnstileCheck(), controller.SendPasswordResetEmail)
 		apiRouter.POST("/user/reset", middleware.CriticalRateLimit(), controller.ResetPassword)
@@ -108,10 +109,10 @@ func SetApiRouter(router *gin.Engine) {
 			channelRoute.POST("/fix", controller.FixChannelsAbilities)
 			channelRoute.GET("/fetch_models/:id", controller.FetchUpstreamModels)
 			channelRoute.POST("/fetch_models", controller.FetchModels)
-                channelRoute.POST("/batch/tag", controller.BatchSetChannelTag)
-                channelRoute.GET("/stats", controller.GetChannelStats)
-        }
-        tokenRoute := apiRouter.Group("/token")
+			channelRoute.POST("/batch/tag", controller.BatchSetChannelTag)
+			channelRoute.GET("/stats", controller.GetChannelStats)
+		}
+		tokenRoute := apiRouter.Group("/token")
 		tokenRoute.Use(middleware.UserAuth())
 		{
 			tokenRoute.GET("/", controller.GetAllTokens)

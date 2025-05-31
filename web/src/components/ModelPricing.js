@@ -13,6 +13,8 @@ import {
   Tooltip,
   Popover,
   ImagePreview,
+  RadioGroup,
+  Radio,
   Button,
 } from '@douyinfe/semi-ui';
 import {
@@ -20,8 +22,10 @@ import {
   IconVerify,
   IconUploadError,
   IconHelpCircle,
+  IconEdit,
 } from '@douyinfe/semi-icons';
 import { UserContext } from '../context/User/index.js';
+import { isAdmin } from '../helpers/utils.js';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 
 const ModelPricing = () => {
@@ -32,6 +36,11 @@ const ModelPricing = () => {
   const [modalImageUrl, setModalImageUrl] = useState('');
   const [isModalOpenurl, setIsModalOpenurl] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState('default');
+  const [editVisible, setEditVisible] = useState(false);
+  const [editModel, setEditModel] = useState(null);
+  const [inputPrice, setInputPrice] = useState('');
+  const [outputPrice, setOutputPrice] = useState('');
+  const [priceUnit, setPriceUnit] = useState('1k');
 
   const rowSelection = useMemo(
     () => ({
@@ -58,6 +67,34 @@ const ModelPricing = () => {
     const value = event.target.value;
     const newFilteredValue = value ? [value] : [];
     setFilteredValue(newFilteredValue);
+  };
+
+  const openEdit = (record) => {
+    const base = 0.002;
+    setInputPrice((record.model_ratio * base).toFixed(3));
+    setOutputPrice(
+      (record.model_ratio * record.completion_ratio * base).toFixed(3),
+    );
+    setPriceUnit('1k');
+    setEditModel(record);
+    setEditVisible(true);
+  };
+
+  const savePrice = async () => {
+    if (!editModel) return;
+    const res = await API.put('/api/pricing', {
+      model_name: editModel.model_name,
+      input_price: parseFloat(inputPrice),
+      output_price: parseFloat(outputPrice),
+      unit: priceUnit,
+    });
+    if (res.data.success) {
+      showSuccess(t('保存成功'));
+      setEditVisible(false);
+      refresh();
+    } else {
+      showError(res.data.message);
+    }
   };
 
   function renderQuotaType(type) {
@@ -275,6 +312,15 @@ const ModelPricing = () => {
         return <div>{content}</div>;
       },
     },
+    {
+      title: t('编辑价格'),
+      dataIndex: 'action',
+      render: (text, record) => (
+        isAdmin() && (
+          <Button icon={<IconEdit />} onClick={() => openEdit(record)} />
+        )
+      ),
+    },
   ];
 
   const [models, setModels] = useState([]);
@@ -420,6 +466,35 @@ const ModelPricing = () => {
           }}
           rowSelection={rowSelection}
         />
+        <Modal
+          visible={editVisible}
+          title={t('编辑价格')}
+          onOk={savePrice}
+          onCancel={() => setEditVisible(false)}
+        >
+          <RadioGroup
+            type='button'
+            value={priceUnit}
+            onChange={(e) => setPriceUnit(e.target.value)}
+            style={{ marginBottom: 12 }}
+          >
+            <Radio value='1k'>/1k tokens</Radio>
+            <Radio value='1m'>/1M tokens</Radio>
+          </RadioGroup>
+          <Input
+            value={inputPrice}
+            onChange={setInputPrice}
+            suffix={`$/1${priceUnit === '1k' ? 'k' : 'M'} tokens`}
+            label={t('实际输入价格')}
+          />
+          <Input
+            value={outputPrice}
+            onChange={setOutputPrice}
+            suffix={`$/1${priceUnit === '1k' ? 'k' : 'M'} tokens`}
+            label={t('实际输出价格')}
+            style={{ marginTop: 12 }}
+          />
+        </Modal>
         <ImagePreview
           src={modalImageUrl}
           visible={isModalOpenurl}
