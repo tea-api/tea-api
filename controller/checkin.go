@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"tea-api/common"
+	"tea-api/model"
 	"tea-api/service"
 
 	"github.com/gin-gonic/gin"
@@ -168,6 +170,76 @@ func UpdateCheckinConfig(c *gin.Context) {
 	common.SpecialRewardDays = config.SpecialDays
 	common.SpecialRewards = config.SpecialRewards
 	common.CheckinStreakReset = config.StreakReset
+
+	// 将配置保存到数据库中
+	if err := model.UpdateOption("CheckinEnabled", strconv.FormatBool(config.CheckinEnabled)); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "保存失败: " + err.Error(),
+		})
+		return
+	}
+	if err := model.UpdateOption("BaseCheckinReward", strconv.Itoa(config.BaseReward)); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "保存失败: " + err.Error(),
+		})
+		return
+	}
+	if err := model.UpdateOption("ContinuousCheckinReward", strconv.Itoa(config.ContinuousReward)); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "保存失败: " + err.Error(),
+		})
+		return
+	}
+	if err := model.UpdateOption("MaxContinuousRewardDays", strconv.Itoa(config.MaxDays)); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "保存失败: " + err.Error(),
+		})
+		return
+	}
+	if err := model.UpdateOption("CheckinStreakReset", strconv.FormatBool(config.StreakReset)); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "保存失败: " + err.Error(),
+		})
+		return
+	}
+
+	// 保存特殊奖励日和奖励额度，需要转换为JSON字符串
+	specialDaysBytes, err := json.Marshal(config.SpecialDays)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "特殊奖励日序列化失败: " + err.Error(),
+		})
+		return
+	}
+	if err := model.UpdateOption("SpecialRewardDays", string(specialDaysBytes)); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "保存失败: " + err.Error(),
+		})
+		return
+	}
+
+	specialRewardsBytes, err := json.Marshal(config.SpecialRewards)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "特殊奖励额度序列化失败: " + err.Error(),
+		})
+		return
+	}
+	if err := model.UpdateOption("SpecialRewards", string(specialRewardsBytes)); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "保存失败: " + err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
