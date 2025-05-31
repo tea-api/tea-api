@@ -18,8 +18,6 @@ const Checkin = () => {
   const [maxDays, setMaxDays] = useState(7);
   const [animate, setAnimate] = useState(false);
   const [specialRewards, setSpecialRewards] = useState([]);
-  const [weeklyBonus, setWeeklyBonus] = useState(0);
-  const [monthlyBonus, setMonthlyBonus] = useState(0);
   const [specialDays, setSpecialDays] = useState([]);
 
   useEffect(() => {
@@ -40,8 +38,6 @@ const Checkin = () => {
             setBaseReward(data.checkin_config.base_reward || 10000);
             setContinuousReward(data.checkin_config.continuous_reward || 1000);
             setMaxDays(data.checkin_config.max_days || 7);
-            setWeeklyBonus(data.checkin_config.weekly_bonus || 20000);
-            setMonthlyBonus(data.checkin_config.monthly_bonus || 50000);
             
             // 设置特殊日期奖励
             if (data.checkin_config.special_rewards) {
@@ -201,15 +197,6 @@ const Checkin = () => {
                   {t('特殊奖励')}
                 </Text>
                 <div className="special-rewards-list">
-                  <div className="special-reward-item">
-                    <Tag color="blue" size="large">{t('周奖励')}</Tag>
-                    <Text>{t('连续签到7天可获得额外')} <span className="highlight">{formatQuota(weeklyBonus)}</span> {t('配额')}</Text>
-                  </div>
-                  <div className="special-reward-item">
-                    <Tag color="purple" size="large">{t('月奖励')}</Tag>
-                    <Text>{t('连续签到30天可获得额外')} <span className="highlight">{formatQuota(monthlyBonus)}</span> {t('配额')}</Text>
-                  </div>
-                  
                   {specialRewards.length > 0 && specialRewards.map((reward, index) => (
                     <div key={index} className="special-reward-item">
                       <Tag color="orange" size="large">

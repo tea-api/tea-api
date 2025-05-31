@@ -100,6 +100,9 @@ func GetCheckinConfig(c *gin.Context) {
 			} else if day == 30 {
 				name = "月奖励"
 				description = "连续签到30天可获得额外奖励"
+			} else if day == 31 {
+				name = "额外奖励"
+				description = "连续签到31天可获得额外奖励"
 			} else {
 				name = "特殊奖励"
 				description = "连续签到" + strconv.Itoa(day) + "天可获得额外奖励"
@@ -125,8 +128,6 @@ func GetCheckinConfig(c *gin.Context) {
 				"max_days":          common.MaxContinuousRewardDays,
 				"special_days":      common.SpecialRewardDays,
 				"special_rewards":   specialRewards,
-				"weekly_bonus":      20000, // 周奖励
-				"monthly_bonus":     50000, // 月奖励
 				"streak_reset":      common.CheckinStreakReset,
 			},
 		},
