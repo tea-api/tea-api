@@ -28,12 +28,12 @@ const FooterBar = () => {
         Tea API {import.meta.env.VITE_REACT_APP_VERSION}{' '}
       </a>
       {t('由')}{' '}
-      <a href='https://github.com/Calcium-Ion' target='_blank' rel='noreferrer'>
-        Calcium-Ion
+      <a href='https://github.com/tea-api' target='_blank' rel='noreferrer'>
+        Tea-API
       </a>{' '}
       {t('开发，基于')}{' '}
       <a
-        href='https://github.com/songquanpeng/one-api'
+        href='https://github.com/QuantumNous/new-api'
         target='_blank'
         rel='noreferrer'
       >

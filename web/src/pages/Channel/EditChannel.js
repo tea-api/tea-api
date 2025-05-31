@@ -104,6 +104,7 @@ const EditChannel = (props) => {
   const [forceFormat, setForceFormat] = useState(false);
   const [thinkingToContent, setThinkingToContent] = useState(false);
   const [proxySetting, setProxySetting] = useState('');
+  const [showExtraSettings, setShowExtraSettings] = useState(false);
   const [paramOverrideList, setParamOverrideList] = useState([
     { key: '', value: '' },
   ]);
@@ -1077,40 +1078,57 @@ const EditChannel = (props) => {
           />
           <>
             <div style={{ marginTop: 10 }}>
-              <Typography.Text strong>{t('渠道额外设置')}：</Typography.Text>
-            </div>
-            <Space style={{ marginTop: 8 }}>
-              <Checkbox checked={forceFormat} onChange={setForceFormat}>
-                force_format
-              </Checkbox>
-              <Checkbox
-                checked={thinkingToContent}
-                onChange={setThinkingToContent}
+              <Typography.Text 
+                strong 
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                onClick={() => setShowExtraSettings(!showExtraSettings)}
               >
-                thinking_to_content
-              </Checkbox>
-            </Space>
-            <Input
-              style={{ marginTop: 8, width: 320 }}
-              placeholder={t('代理地址，例如：socks5://xxx')}
-              value={proxySetting}
-              onChange={(val) => setProxySetting(val)}
-              autoComplete='new-password'
-            />
-            <Typography.Text
-              style={{
-                color: 'rgba(var(--semi-blue-5), 1)',
-                userSelect: 'none',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                window.open(
-                  'https://github.com/tea-api/tea-api/blob/main/docs/channel/other_setting.md',
-                );
-              }}
-            >
-              {t('设置说明')}
-            </Typography.Text>
+                {t('渠道额外设置')}：
+                {showExtraSettings ? ' ▼' : ' ►'}
+              </Typography.Text>
+            </div>
+            {showExtraSettings && (
+              <div style={{ marginTop: 8, padding: '8px 12px', border: '1px solid var(--semi-color-border)', borderRadius: '6px' }}>
+                <Space vertical align="start" style={{ width: '100%' }}>
+                  <Checkbox checked={forceFormat} onChange={(e) => setForceFormat(e.target.checked)}>
+                    {t('强制格式化响应')}
+                  </Checkbox>
+                  <Checkbox
+                    checked={thinkingToContent}
+                    onChange={(e) => setThinkingToContent(e.target.checked)}
+                  >
+                    {t('将思考过程转为内容')}
+                  </Checkbox>
+                  <div style={{ width: '100%' }}>
+                    <Typography.Text>{t('代理设置')}：</Typography.Text>
+                    <Tooltip content={t('支持 HTTP、HTTPS 和 SOCKS5 代理，例如：http://user:pass@host:port 或 socks5://host:port')}>
+                      <IconHelpCircle size="small" style={{ marginLeft: 4 }} />
+                    </Tooltip>
+                    <Input
+                      style={{ marginTop: 4, width: '100%' }}
+                      placeholder={t('代理地址，例如：socks5://127.0.0.1:7890')}
+                      value={proxySetting}
+                      onChange={(val) => setProxySetting(val)}
+                      autoComplete='new-password'
+                    />
+                  </div>
+                  <Typography.Text
+                    style={{
+                      color: 'rgba(var(--semi-blue-5), 1)',
+                      userSelect: 'none',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      window.open(
+                        'https://github.com/tea-api/tea-api/blob/main/docs/channel/other_setting.md',
+                      );
+                    }}
+                  >
+                    {t('设置说明')}
+                  </Typography.Text>
+                </Space>
+              </div>
+            )}
           </>
           <>
             <div style={{ marginTop: 10 }}>
