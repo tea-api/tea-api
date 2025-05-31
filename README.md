@@ -1,5 +1,5 @@
 <p align="right">
-   <a href="./README.en.md">English</a> | <strong>中文</strong>
+  <strong><a href="./README.en.md">English</a> | 中文</strong>
 </p>
 <div align="center">
 
@@ -14,7 +14,16 @@
 API公益站系统
 
 基于原汁原味的 New API 体验, 对界面无大改动, 遵循 Apache 2.0 协议, 无商用限制, 承诺不变质.  
-添加极多原版不计划添加的特性. 以下只是部分.  
+添加极多原版不计划添加的特性. 以下只是部分.
+
+## 目录
+
+- [特性](#特性)
+- [迁移](#迁移)
+- [部署](#部署)
+- [环境变量](#环境变量)
+- [Star History](#-star-history)
+- [License](#license)
 
 ## 特性
 
@@ -89,3 +98,9 @@ docker build -t teapi/tea-api:latest .
 ## 🌟 Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=tea-api/tea-api&type=Date)](https://star-history.com/#tea-api/tea-api&Date)
+
+## License
+
+Tea-API is released under the [Apache-2.0](LICENSE) License.
+
+</div>
