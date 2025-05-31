@@ -28,7 +28,7 @@ import {
   ImagePreview,
 } from '@douyinfe/semi-ui';
 import { getChannelModels, loadChannelModels } from '../../components/utils.js';
-import { IconHelpCircle } from '@douyinfe/semi-icons';
+import { IconHelpCircle, IconSearch } from '@douyinfe/semi-icons';
 import KeyValueList from '../../components/custom/KeyValueList.js';
 
 const MODEL_MAPPING_EXAMPLE = {
@@ -111,6 +111,10 @@ const EditChannel = (props) => {
   const [statusCodeMappingList, setStatusCodeMappingList] = useState([
     { key: '', value: '' },
   ]);
+  const [showModelPicker, setShowModelPicker] = useState(false);
+  const [fetchedModels, setFetchedModels] = useState([]);
+  const [selectedModels, setSelectedModels] = useState([]);
+  const [modelSearchKeyword, setModelSearchKeyword] = useState('');
   const handleInputChange = (name, value) => {
     if (name === 'base_url' && value.endsWith('/v1')) {
       Modal.confirm({
@@ -286,6 +290,53 @@ const EditChannel = (props) => {
     if (!err) {
       handleInputChange(name, Array.from(new Set(models)));
       showSuccess(t('获取模型列表成功'));
+    } else {
+      showError(t('获取模型列表失败'));
+    }
+    setLoading(false);
+  };
+
+  const fetchUpstreamModelListVisual = async () => {
+    setLoading(true);
+    const models = [];
+    let err = false;
+
+    if (isEdit) {
+      const res = await API.get('/api/channel/fetch_models/' + channelId);
+      if (res.data && res.data?.success) {
+        models.push(...res.data.data);
+      } else {
+        err = true;
+      }
+    } else {
+      if (!inputs?.['key']) {
+        showError(t('请填写密钥'));
+        err = true;
+      } else {
+        try {
+          const res = await API.post('/api/channel/fetch_models', {
+            base_url: inputs['base_url'],
+            type: inputs['type'],
+            key: inputs['key'],
+          });
+
+          if (res.data && res.data.success) {
+            models.push(...res.data.data);
+          } else {
+            err = true;
+          }
+        } catch (error) {
+          console.error('Error fetching models:', error);
+          err = true;
+        }
+      }
+    }
+
+    if (!err) {
+      setFetchedModels(Array.from(new Set(models)));
+      setSelectedModels([]);
+      setModelSearchKeyword('');
+      setShowModelPicker(true);
     } else {
       showError(t('获取模型列表失败'));
     }
@@ -972,6 +1023,14 @@ const EditChannel = (props) => {
                 >
                   {t('获取模型列表')}
                 </Button>
+                <Button
+                  type='tertiary'
+                  onClick={() => {
+                    fetchUpstreamModelListVisual();
+                  }}
+                >
+                  {t('可视化获取模型')}
+                </Button>
               </Tooltip>
               <Button
                 type='warning'
@@ -1078,19 +1137,32 @@ const EditChannel = (props) => {
           />
           <>
             <div style={{ marginTop: 10 }}>
-              <Typography.Text 
-                strong 
-                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              <Typography.Text
+                strong
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
                 onClick={() => setShowExtraSettings(!showExtraSettings)}
               >
-                {t('渠道额外设置')}：
-                {showExtraSettings ? ' ▼' : ' ►'}
+                {t('渠道额外设置')}：{showExtraSettings ? ' ▼' : ' ►'}
               </Typography.Text>
             </div>
             {showExtraSettings && (
-              <div style={{ marginTop: 8, padding: '8px 12px', border: '1px solid var(--semi-color-border)', borderRadius: '6px' }}>
-                <Space vertical align="start" style={{ width: '100%' }}>
-                  <Checkbox checked={forceFormat} onChange={(e) => setForceFormat(e.target.checked)}>
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: '8px 12px',
+                  border: '1px solid var(--semi-color-border)',
+                  borderRadius: '6px',
+                }}
+              >
+                <Space vertical align='start' style={{ width: '100%' }}>
+                  <Checkbox
+                    checked={forceFormat}
+                    onChange={(e) => setForceFormat(e.target.checked)}
+                  >
                     {t('强制格式化响应')}
                   </Checkbox>
                   <Checkbox
@@ -1101,8 +1173,12 @@ const EditChannel = (props) => {
                   </Checkbox>
                   <div style={{ width: '100%' }}>
                     <Typography.Text>{t('代理设置')}：</Typography.Text>
-                    <Tooltip content={t('支持 HTTP、HTTPS 和 SOCKS5 代理，例如：http://user:pass@host:port 或 socks5://host:port')}>
-                      <IconHelpCircle size="small" style={{ marginLeft: 4 }} />
+                    <Tooltip
+                      content={t(
+                        '支持 HTTP、HTTPS 和 SOCKS5 代理，例如：http://user:pass@host:port 或 socks5://host:port',
+                      )}
+                    >
+                      <IconHelpCircle size='small' style={{ marginLeft: 4 }} />
                     </Tooltip>
                     <Input
                       style={{ marginTop: 4, width: '100%' }}
@@ -1203,6 +1279,52 @@ const EditChannel = (props) => {
           visible={isModalOpenurl}
           onVisibleChange={(visible) => setIsModalOpenurl(visible)}
         />
+        <Modal
+          title={t('选择模型')}
+          visible={showModelPicker}
+          onCancel={() => setShowModelPicker(false)}
+          onOk={() => {
+            handleInputChange(
+              'models',
+              Array.from(new Set([...inputs.models, ...selectedModels])),
+            );
+            setShowModelPicker(false);
+          }}
+          maskClosable={false}
+          style={{ width: isMobile() ? '90%' : 500 }}
+        >
+          <Input
+            prefix={<IconSearch />}
+            placeholder={t('搜索模型名称')}
+            value={modelSearchKeyword}
+            onChange={(v) => setModelSearchKeyword(v)}
+            style={{ marginBottom: 12 }}
+          />
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {fetchedModels
+              .filter((m) =>
+                m.toLowerCase().includes(modelSearchKeyword.toLowerCase()),
+              )
+              .map((model) => (
+                <div key={model} style={{ marginBottom: 8 }}>
+                  <Checkbox
+                    checked={selectedModels.includes(model)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedModels([...selectedModels, model]);
+                      } else {
+                        setSelectedModels(
+                          selectedModels.filter((m) => m !== model),
+                        );
+                      }
+                    }}
+                  >
+                    {model}
+                  </Checkbox>
+                </div>
+              ))}
+          </div>
+        </Modal>
       </SideSheet>
     </>
   );

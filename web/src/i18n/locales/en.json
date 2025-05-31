@@ -1166,6 +1166,8 @@
   "填入相关模型": "Fill Related Models",
   "新建渠道时，请求通过当前浏览器发出；编辑已有渠道，请求通过后端服务器发出": "When creating a new channel, requests are sent through the current browser; when editing an existing channel, requests are sent through the backend server",
   "获取模型列表": "Get Model List",
+  "可视化获取模型": "Visual Model Picker",
+  "选择模型": "Select Models",
   "填入": "Fill",
   "输入自定义模型名称": "Enter Custom Model Name",
   "知识库 ID": "Knowledge Base ID",
