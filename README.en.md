@@ -20,7 +20,7 @@ Many features that were not planned to be added in the original version have bee
 - [Features](#Features)
 - [Migration](#Migration)
 - [Deployment](#Deployment)
-- [EnvironmentVariables](#Environment Variables)
+- [EnvironmentVariables](#EnvironmentVariables)
 - [Star History](#-star-history)
 - [License](#license)
 
@@ -71,7 +71,7 @@ nano docker-compose.yml
 docker-compose up -d
 ```
 
-## Environment Variables
+## EnvironmentVariables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
