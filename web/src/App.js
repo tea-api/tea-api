@@ -13,7 +13,6 @@ import PasswordResetConfirm from './components/PasswordResetConfirm';
 import Channel from './pages/Channel';
 import Token from './pages/Token';
 import EditChannel from './pages/Channel/EditChannel';
-import ChannelHealth from './pages/Channel/Health';
 import Redemption from './pages/Redemption';
 import TopUp from './pages/TopUp';
 import Checkin from './pages/Checkin';
@@ -61,14 +60,6 @@ function App() {
           element={
             <PrivateRoute>
               <Channel />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/channel/monitor'
-          element={
-            <PrivateRoute>
-              <ChannelHealth />
             </PrivateRoute>
           }
         />
