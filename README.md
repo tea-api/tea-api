@@ -54,10 +54,16 @@ cd veloera
 nano docker-compose.yml
 ```
 
-3. 启动服务
+3. 构建并启动服务
 
 ```shell
-docker-compose up -d
+docker-compose up -d --build
+```
+
+如需单独构建镜像，可执行：
+
+```shell
+docker build -t tea-api/tea-api:latest .
 ```
 
 ## 环境变量

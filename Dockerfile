@@ -1,35 +1,36 @@
-FROM oven/bun:latest AS builder
+FROM oven/bun:latest AS frontend
 
-WORKDIR /build
-COPY web/package.json .
+WORKDIR /app/web
+COPY web/package.json ./
 RUN bun install
-COPY ./web .
-COPY ./VERSION .
-RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat VERSION) bun run build
+COPY web ./
+COPY VERSION ../
+RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat ../VERSION) bun run build
 
-FROM golang:alpine AS builder2
+FROM golang:alpine AS backend
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux
 
-WORKDIR /build
+WORKDIR /app
 
 ADD go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-COPY --from=builder /build/dist ./web/dist
+COPY --from=frontend /app/web/dist ./web/dist
 RUN go build -ldflags "-s -w -X 'tea-api/common.Version=$(cat VERSION)'" -o tea-api
 
 FROM alpine
 
-RUN apk update \
-    && apk upgrade \
-    && apk add --no-cache ca-certificates tzdata ffmpeg \
+RUN apk add --no-cache ca-certificates tzdata ffmpeg \
+    && addgroup -S tea && adduser -S tea -G tea \
+    && mkdir /data && chown tea:tea /data \
     && update-ca-certificates
 
-COPY --from=builder2 /build/tea-api /
+COPY --from=backend /app/tea-api /usr/local/bin/tea-api
+USER tea
 EXPOSE 3000
 WORKDIR /data
-ENTRYPOINT ["/tea-api"]
+ENTRYPOINT ["tea-api"]

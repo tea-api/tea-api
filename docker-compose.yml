@@ -3,6 +3,9 @@ version: '3.8'
 services:
   tea-api:
     image: tea-api/tea-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: tea-api
     restart: always
     command: --log-dir /app/logs
