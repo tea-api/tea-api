@@ -3,8 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"tea-api/common"
 	"strconv"
+	"tea-api/common"
 
 	"gorm.io/gorm"
 )
@@ -18,6 +18,9 @@ type Redemption struct {
 	Quota        int            `json:"quota" gorm:"default:100"`
 	CreatedTime  int64          `json:"created_time" gorm:"bigint"`
 	RedeemedTime int64          `json:"redeemed_time" gorm:"bigint"`
+	MaxTimes     int            `json:"max_times" gorm:"default:1"`
+	UsedTimes    int            `json:"used_times" gorm:"default:0"`
+	ExpiredTime  int64          `json:"expired_time" gorm:"bigint;default:-1"`
 	Count        int            `json:"count" gorm:"-:all"` // only for api request
 	UsedUserId   int            `json:"used_user_id"`
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
@@ -131,13 +134,27 @@ func Redeem(key string, userId int) (quota int, err error) {
 		if redemption.Status != common.RedemptionCodeStatusEnabled {
 			return errors.New("该兑换码已被使用")
 		}
+		now := common.GetTimestamp()
+		if redemption.ExpiredTime != -1 && redemption.ExpiredTime <= now {
+			redemption.Status = common.RedemptionCodeStatusDisabled
+			tx.Save(redemption)
+			return errors.New("该兑换码已过期")
+		}
+		if redemption.UsedTimes >= redemption.MaxTimes {
+			redemption.Status = common.RedemptionCodeStatusUsed
+			tx.Save(redemption)
+			return errors.New("该兑换码已被使用")
+		}
 		err = tx.Model(&User{}).Where("id = ?", userId).Update("quota", gorm.Expr("quota + ?", redemption.Quota)).Error
 		if err != nil {
 			return err
 		}
-		redemption.RedeemedTime = common.GetTimestamp()
-		redemption.Status = common.RedemptionCodeStatusUsed
+		redemption.RedeemedTime = now
 		redemption.UsedUserId = userId
+		redemption.UsedTimes++
+		if redemption.UsedTimes >= redemption.MaxTimes {
+			redemption.Status = common.RedemptionCodeStatusUsed
+		}
 		err = tx.Save(redemption).Error
 		return err
 	})
@@ -162,7 +179,7 @@ func (redemption *Redemption) SelectUpdate() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (redemption *Redemption) Update() error {
 	var err error
-	err = DB.Model(redemption).Select("name", "status", "quota", "redeemed_time").Updates(redemption).Error
+	err = DB.Model(redemption).Select("name", "status", "quota", "redeemed_time", "max_times", "expired_time").Updates(redemption).Error
 	return err
 }
 

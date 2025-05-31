@@ -2,9 +2,9 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 	"tea-api/common"
 	"tea-api/model"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -112,6 +112,13 @@ func AddRedemption(c *gin.Context) {
 		})
 		return
 	}
+	if redemption.Key != "" && redemption.Count > 1 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "自定义兑换码只能生成一个",
+		})
+		return
+	}
 	if redemption.Count <= 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -126,15 +133,27 @@ func AddRedemption(c *gin.Context) {
 		})
 		return
 	}
+	if redemption.MaxTimes <= 0 {
+		redemption.MaxTimes = 1
+	}
 	var keys []string
-	for i := 0; i < redemption.Count; i++ {
-		key := common.GetUUID()
+	total := redemption.Count
+	if redemption.Key != "" {
+		total = 1
+	}
+	for i := 0; i < total; i++ {
+		key := redemption.Key
+		if key == "" {
+			key = common.GetUUID()
+		}
 		cleanRedemption := model.Redemption{
 			UserId:      c.GetInt("id"),
 			Name:        redemption.Name,
 			Key:         key,
 			CreatedTime: common.GetTimestamp(),
 			Quota:       redemption.Quota,
+			MaxTimes:    redemption.MaxTimes,
+			ExpiredTime: redemption.ExpiredTime,
 		}
 		err = cleanRedemption.Insert()
 		if err != nil {
@@ -197,6 +216,10 @@ func UpdateRedemption(c *gin.Context) {
 		// If you add more fields, please also update redemption.Update()
 		cleanRedemption.Name = redemption.Name
 		cleanRedemption.Quota = redemption.Quota
+		if redemption.MaxTimes > 0 {
+			cleanRedemption.MaxTimes = redemption.MaxTimes
+		}
+		cleanRedemption.ExpiredTime = redemption.ExpiredTime
 	}
 	err = cleanRedemption.Update()
 	if err != nil {

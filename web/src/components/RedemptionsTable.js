@@ -83,6 +83,25 @@ const RedemptionsTable = () => {
       },
     },
     {
+      title: t('最多使用次数'),
+      dataIndex: 'max_times',
+    },
+    {
+      title: t('已使用次数'),
+      dataIndex: 'used_times',
+    },
+    {
+      title: t('过期时间'),
+      dataIndex: 'expired_time',
+      render: (text, record) => {
+        return (
+          <div>
+            {record.expired_time === -1 ? t('永不过期') : renderTimestamp(text)}
+          </div>
+        );
+      },
+    },
+    {
       title: t('创建时间'),
       dataIndex: 'created_time',
       render: (text, record, index) => {

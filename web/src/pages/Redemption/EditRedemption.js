@@ -7,6 +7,7 @@ import {
   isMobile,
   showError,
   showSuccess,
+  timestamp2string,
 } from '../../helpers';
 import {
   getQuotaPerUnit,
@@ -16,6 +17,7 @@ import {
 import {
   AutoComplete,
   Button,
+  DatePicker,
   Input,
   Modal,
   SideSheet,
@@ -37,12 +39,30 @@ const EditRedemption = (props) => {
     name: '',
     quota: 100000,
     count: 1,
+    key: '',
+    max_times: 1,
+    expired_time: -1,
   };
   const [inputs, setInputs] = useState(originInputs);
-  const { name, quota, count } = inputs;
+  const { name, quota, count, key, max_times, expired_time } = inputs;
 
   const handleCancel = () => {
     props.handleClose();
+  };
+
+  const setExpiredTime = (month, day, hour, minute) => {
+    let now = new Date();
+    let timestamp = now.getTime() / 1000;
+    let seconds = month * 30 * 24 * 60 * 60;
+    seconds += day * 24 * 60 * 60;
+    seconds += hour * 60 * 60;
+    seconds += minute * 60;
+    if (seconds !== 0) {
+      timestamp += seconds;
+      setInputs({ ...inputs, expired_time: timestamp2string(timestamp) });
+    } else {
+      setInputs({ ...inputs, expired_time: -1 });
+    }
   };
 
   const handleInputChange = (name, value) => {
@@ -54,6 +74,9 @@ const EditRedemption = (props) => {
     let res = await API.get(`/api/redemption/${props.editingRedemption.id}`);
     const { success, message, data } = res.data;
     if (success) {
+      if (data.expired_time !== -1) {
+        data.expired_time = timestamp2string(data.expired_time);
+      }
       setInputs(data);
     } else {
       showError(message);
@@ -81,7 +104,17 @@ const EditRedemption = (props) => {
     let localInputs = inputs;
     localInputs.count = parseInt(localInputs.count);
     localInputs.quota = parseInt(localInputs.quota);
+    localInputs.max_times = parseInt(localInputs.max_times);
     localInputs.name = name;
+    if (localInputs.expired_time !== -1) {
+      let time = Date.parse(localInputs.expired_time);
+      if (isNaN(time)) {
+        showError(t('过期时间格式错误！'));
+        setLoading(false);
+        return;
+      }
+      localInputs.expired_time = Math.ceil(time / 1000);
+    }
     let res;
     if (isEdit) {
       res = await API.put(`/api/redemption/`, {
@@ -173,6 +206,20 @@ const EditRedemption = (props) => {
             autoComplete='new-password'
             required={!isEdit}
           />
+          {!isEdit && (
+            <>
+              <Divider />
+              <Input
+                style={{ marginTop: 8 }}
+                label={t('自定义兑换码')}
+                name='key'
+                placeholder={t('自定义兑换码')}
+                onChange={(value) => handleInputChange('key', value)}
+                value={key}
+                autoComplete='new-password'
+              />
+            </>
+          )}
           <Divider />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>
@@ -197,6 +244,43 @@ const EditRedemption = (props) => {
               { value: 500000000, label: '1000$' },
             ]}
           />
+          <Divider />
+          <Input
+            style={{ marginTop: 8 }}
+            label={t('最多使用次数')}
+            name='max_times'
+            placeholder={t('最多使用次数')}
+            onChange={(value) => handleInputChange('max_times', value)}
+            value={max_times}
+            autoComplete='new-password'
+            type='number'
+          />
+          <Divider />
+          <DatePicker
+            label={t('过期时间')}
+            name='expired_time'
+            placeholder={t('请选择过期时间')}
+            onChange={(value) => handleInputChange('expired_time', value)}
+            value={expired_time}
+            autoComplete='new-password'
+            type='dateTime'
+          />
+          <div style={{ marginTop: 8 }}>
+            <Space>
+              <Button type={'tertiary'} onClick={() => setExpiredTime(0, 0, 0, 0)}>
+                {t('永不过期')}
+              </Button>
+              <Button type={'tertiary'} onClick={() => setExpiredTime(0, 0, 1, 0)}>
+                {t('一小时')}
+              </Button>
+              <Button type={'tertiary'} onClick={() => setExpiredTime(0, 1, 0, 0)}>
+                {t('一天')}
+              </Button>
+              <Button type={'tertiary'} onClick={() => setExpiredTime(1, 0, 0, 0)}>
+                {t('一个月')}
+              </Button>
+            </Space>
+          </div>
           {!isEdit && (
             <>
               <Divider />
