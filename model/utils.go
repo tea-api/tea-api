@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/bytedance/gopkg/util/gopool"
 	"gorm.io/gorm"
-	"tea-api/common"
 	"sync"
+	"tea-api/common"
 	"time"
 )
 
@@ -49,6 +49,7 @@ func addNewRecord(type_ int, id int, value int) {
 
 func batchUpdate() {
 	common.SysLog("batch update started")
+	var wg sync.WaitGroup
 	for i := 0; i < BatchUpdateTypeCount; i++ {
 		batchUpdateLocks[i].Lock()
 		store := batchUpdateStores[i]
@@ -56,26 +57,32 @@ func batchUpdate() {
 		batchUpdateLocks[i].Unlock()
 		// TODO: maybe we can combine updates with same key?
 		for key, value := range store {
-			switch i {
-			case BatchUpdateTypeUserQuota:
-				err := increaseUserQuota(key, value)
-				if err != nil {
-					common.SysError("failed to batch update user quota: " + err.Error())
+			wg.Add(1)
+			key := key
+			value := value
+			typeIndex := i
+			gopool.Go(func() {
+				defer wg.Done()
+				switch typeIndex {
+				case BatchUpdateTypeUserQuota:
+					if err := increaseUserQuota(key, value); err != nil {
+						common.SysError("failed to batch update user quota: " + err.Error())
+					}
+				case BatchUpdateTypeTokenQuota:
+					if err := increaseTokenQuota(key, value); err != nil {
+						common.SysError("failed to batch update token quota: " + err.Error())
+					}
+				case BatchUpdateTypeUsedQuota:
+					updateUserUsedQuota(key, value)
+				case BatchUpdateTypeRequestCount:
+					updateUserRequestCount(key, value)
+				case BatchUpdateTypeChannelUsedQuota:
+					updateChannelUsedQuota(key, value)
 				}
-			case BatchUpdateTypeTokenQuota:
-				err := increaseTokenQuota(key, value)
-				if err != nil {
-					common.SysError("failed to batch update token quota: " + err.Error())
-				}
-			case BatchUpdateTypeUsedQuota:
-				updateUserUsedQuota(key, value)
-			case BatchUpdateTypeRequestCount:
-				updateUserRequestCount(key, value)
-			case BatchUpdateTypeChannelUsedQuota:
-				updateChannelUsedQuota(key, value)
-			}
+			})
 		}
 	}
+	wg.Wait()
 	common.SysLog("batch update finished")
 }
 
