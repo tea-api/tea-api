@@ -409,6 +409,26 @@ const ModelPricing = () => {
     refresh().then();
   }, []);
 
+  // 处理输入价格变化
+  const handleInputPriceChange = (value) => {
+    setInputPrice(value);
+    // 计算补全倍率，但不显示提示
+    const inputVal = parseFloat(value);
+    const outputVal = parseFloat(outputPrice);
+    
+    // 保留计算逻辑，但删除showInfo
+  };
+  
+  // 处理输出价格变化
+  const handleOutputPriceChange = (value) => {
+    setOutputPrice(value);
+    // 计算补全倍率，但不显示提示
+    const inputVal = parseFloat(inputPrice);
+    const outputVal = parseFloat(value);
+    
+    // 保留计算逻辑，但删除showInfo
+  };
+
   // 处理单位切换
   const handleUnitChange = (value) => {
     if (!editModel) return;
@@ -436,61 +456,10 @@ const ModelPricing = () => {
       setInputPrice(newInputPrice);
       setOutputPrice(newOutputPrice);
       
-      // 计算并显示补全倍率
-      const inputVal = parseFloat(newInputPrice);
-      const outputVal = parseFloat(newOutputPrice);
-      
-      if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
-        const ratio = outputVal / inputVal;
-        if (inputVal === outputVal && inputVal !== 0) {
-          showInfo(t('输入输出价格相同，补全倍率将自动设为1'));
-        } else {
-          showInfo(t('当前设置的补全倍率为: {{ratio}}', {
-            ratio: ratio.toFixed(3)
-          }));
-        }
-      }
+      // 保留计算逻辑，但删除showInfo
     }
     
     setPriceUnit(value);
-  };
-
-  // 处理输入价格变化
-  const handleInputPriceChange = (value) => {
-    setInputPrice(value);
-    // 计算并显示补全倍率
-    const inputVal = parseFloat(value);
-    const outputVal = parseFloat(outputPrice);
-    
-    if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
-      const ratio = outputVal / inputVal;
-      if (inputVal === outputVal) {
-        showInfo(t('输入输出价格相同，补全倍率将自动设为1'));
-      } else {
-        showInfo(t('当前设置的补全倍率为: {{ratio}}', {
-          ratio: ratio.toFixed(3)
-        }));
-      }
-    }
-  };
-  
-  // 处理输出价格变化
-  const handleOutputPriceChange = (value) => {
-    setOutputPrice(value);
-    // 计算并显示补全倍率
-    const inputVal = parseFloat(inputPrice);
-    const outputVal = parseFloat(value);
-    
-    if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
-      const ratio = outputVal / inputVal;
-      if (inputVal === outputVal) {
-        showInfo(t('输入输出价格相同，补全倍率将自动设为1'));
-      } else {
-        showInfo(t('当前设置的补全倍率为: {{ratio}}', {
-          ratio: ratio.toFixed(3)
-        }));
-      }
-    }
   };
 
   return (
@@ -606,7 +575,7 @@ const ModelPricing = () => {
                 return (
                   <Banner
                     type='info'
-                    description={t('输入输出价格相同，补全倍率将自动设为1')}
+                    description={t('当前补全倍率为: 1')}
                     style={{ marginTop: 12 }}
                   />
                 );
