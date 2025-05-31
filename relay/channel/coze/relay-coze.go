@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"tea-api/common"
 	"tea-api/dto"
 	relaycommon "tea-api/relay/common"
 	"tea-api/relay/helper"
 	"tea-api/service"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -211,7 +211,7 @@ func handleCozeEvent(c *gin.Context, event string, data string, responseText *st
 			return
 		}
 
-		common.SysError(fmt.Sprintf("stream event error: ", errorData.Code, errorData.Message))
+		common.SysError(fmt.Sprintf("stream event error: %d %s", errorData.Code, errorData.Message))
 	}
 }
 

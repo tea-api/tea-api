@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"tea-api/common"
 	"tea-api/constant"
 	"tea-api/controller"
@@ -13,8 +15,6 @@ import (
 	"tea-api/router"
 	"tea-api/service"
 	"tea-api/setting/operation_setting"
-	"os"
-	"strconv"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-contrib/sessions"
@@ -162,6 +162,7 @@ func main() {
 	// This will cause SSE not to work!!!
 	//server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.RequestId())
+	server.Use(middleware.AbnormalDetection())
 	middleware.SetUpLogger(server)
 	// Initialize session store
 	store := cookie.NewStore([]byte(common.SessionSecret))
