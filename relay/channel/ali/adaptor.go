@@ -18,9 +18,8 @@ type Adaptor struct {
 }
 
 func (a *Adaptor) ConvertClaudeRequest(*gin.Context, *relaycommon.RelayInfo, *dto.ClaudeRequest) (any, error) {
-	//TODO implement me
-	return nil, errors.New("not implemented")
-	return nil, nil
+        //TODO implement me
+        return nil, errors.New("not implemented")
 }
 
 func (a *Adaptor) Init(info *relaycommon.RelayInfo) {
