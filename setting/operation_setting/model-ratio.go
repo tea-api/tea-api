@@ -2,9 +2,9 @@ package operation_setting
 
 import (
 	"encoding/json"
-	"tea-api/common"
 	"strings"
 	"sync"
+	"tea-api/common"
 )
 
 // from songquanpeng/one-api
@@ -396,18 +396,20 @@ func GetCompletionRatio(name string) float64 {
 	CompletionRatioMutex.RLock()
 	defer CompletionRatioMutex.RUnlock()
 
+	// 首先检查是否有自定义设置的补全倍率
+	if ratio, ok := CompletionRatio[name]; ok {
+		return ratio
+	}
+
+	// 处理特殊路径格式
 	if strings.Contains(name, "/") {
 		if ratio, ok := CompletionRatio[name]; ok {
 			return ratio
 		}
 	}
-	hardCodedRatio, contain := getHardcodedCompletionModelRatio(name)
-	if contain {
-		return hardCodedRatio
-	}
-	if ratio, ok := CompletionRatio[name]; ok {
-		return ratio
-	}
+
+	// 最后才使用硬编码的倍率
+	hardCodedRatio, _ := getHardcodedCompletionModelRatio(name)
 	return hardCodedRatio
 }
 
