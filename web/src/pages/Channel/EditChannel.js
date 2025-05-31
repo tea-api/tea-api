@@ -29,6 +29,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { getChannelModels, loadChannelModels } from '../../components/utils.js';
 import { IconHelpCircle } from '@douyinfe/semi-icons';
+import KeyValueList from '../../components/custom/KeyValueList.js';
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo': 'gpt-3.5-turbo-0125',
@@ -100,6 +101,15 @@ const EditChannel = (props) => {
   const [customModel, setCustomModel] = useState('');
   const [modalImageUrl, setModalImageUrl] = useState('');
   const [isModalOpenurl, setIsModalOpenurl] = useState(false);
+  const [forceFormat, setForceFormat] = useState(false);
+  const [thinkingToContent, setThinkingToContent] = useState(false);
+  const [proxySetting, setProxySetting] = useState('');
+  const [paramOverrideList, setParamOverrideList] = useState([
+    { key: '', value: '' },
+  ]);
+  const [statusCodeMappingList, setStatusCodeMappingList] = useState([
+    { key: '', value: '' },
+  ]);
   const handleInputChange = (name, value) => {
     if (name === 'base_url' && value.endsWith('/v1')) {
       Modal.confirm({
@@ -186,6 +196,35 @@ const EditChannel = (props) => {
           null,
           2,
         );
+      }
+      // parse extra settings
+      if (data.setting) {
+        try {
+          const settingObj = JSON.parse(data.setting);
+          setForceFormat(settingObj.force_format || false);
+          setProxySetting(settingObj.proxy || '');
+          setThinkingToContent(settingObj.thinking_to_content || false);
+        } catch (e) {}
+      }
+      if (data.param_override) {
+        try {
+          const obj = JSON.parse(data.param_override);
+          const list = Object.entries(obj).map(([k, v]) => ({
+            key: k,
+            value: typeof v === 'object' ? JSON.stringify(v) : String(v),
+          }));
+          if (list.length > 0) setParamOverrideList(list);
+        } catch (e) {}
+      }
+      if (data.status_code_mapping) {
+        try {
+          const obj = JSON.parse(data.status_code_mapping);
+          const list = Object.entries(obj).map(([k, v]) => ({
+            key: k,
+            value: v,
+          }));
+          if (list.length > 0) setStatusCodeMappingList(list);
+        } catch (e) {}
       }
       setInputs(data);
       if (data.auto_ban === 0) {
@@ -330,6 +369,35 @@ const EditChannel = (props) => {
       return;
     }
     let localInputs = { ...inputs };
+    const settingObj = {};
+    if (forceFormat) settingObj['force_format'] = true;
+    if (proxySetting) settingObj['proxy'] = proxySetting;
+    if (thinkingToContent) settingObj['thinking_to_content'] = true;
+    localInputs.setting = Object.keys(settingObj).length
+      ? JSON.stringify(settingObj)
+      : '';
+    const paramObj = {};
+    paramOverrideList.forEach((pair) => {
+      if (pair.key !== '') {
+        try {
+          paramObj[pair.key] = JSON.parse(pair.value);
+        } catch (e) {
+          paramObj[pair.key] = pair.value;
+        }
+      }
+    });
+    localInputs.param_override = Object.keys(paramObj).length
+      ? JSON.stringify(paramObj)
+      : '';
+    const mappingObj = {};
+    statusCodeMappingList.forEach((pair) => {
+      if (pair.key !== '' && pair.value !== '') {
+        mappingObj[pair.key] = pair.value;
+      }
+    });
+    localInputs.status_code_mapping = Object.keys(mappingObj).length
+      ? JSON.stringify(mappingObj)
+      : '';
     if (localInputs.base_url && localInputs.base_url.endsWith('/')) {
       localInputs.base_url = localInputs.base_url.slice(
         0,
@@ -1011,75 +1079,49 @@ const EditChannel = (props) => {
             <div style={{ marginTop: 10 }}>
               <Typography.Text strong>{t('渠道额外设置')}：</Typography.Text>
             </div>
-            <TextArea
-              placeholder={
-                t(
-                  '此项可选，用于配置渠道特定设置，为一个 JSON 字符串，例如：',
-                ) + '\n{\n  "force_format": true\n}'
-              }
-              name='setting'
-              onChange={(value) => {
-                handleInputChange('setting', value);
-              }}
-              autosize
-              value={inputs.setting}
+            <Space style={{ marginTop: 8 }}>
+              <Checkbox checked={forceFormat} onChange={setForceFormat}>
+                force_format
+              </Checkbox>
+              <Checkbox
+                checked={thinkingToContent}
+                onChange={setThinkingToContent}
+              >
+                thinking_to_content
+              </Checkbox>
+            </Space>
+            <Input
+              style={{ marginTop: 8, width: 320 }}
+              placeholder={t('代理地址，例如：socks5://xxx')}
+              value={proxySetting}
+              onChange={(val) => setProxySetting(val)}
               autoComplete='new-password'
             />
-            <Space>
-              <Typography.Text
-                style={{
-                  color: 'rgba(var(--semi-blue-5), 1)',
-                  userSelect: 'none',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  handleInputChange(
-                    'setting',
-                    JSON.stringify(
-                      {
-                        force_format: true,
-                      },
-                      null,
-                      2,
-                    ),
-                  );
-                }}
-              >
-                {t('填入模板')}
-              </Typography.Text>
-              <Typography.Text
-                style={{
-                  color: 'rgba(var(--semi-blue-5), 1)',
-                  userSelect: 'none',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  window.open(
-                    'https://github.com/tea-api/tea-api/blob/main/docs/channel/other_setting.md',
-                  );
-                }}
-              >
-                {t('设置说明')}
-              </Typography.Text>
-            </Space>
+            <Typography.Text
+              style={{
+                color: 'rgba(var(--semi-blue-5), 1)',
+                userSelect: 'none',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                window.open(
+                  'https://github.com/tea-api/tea-api/blob/main/docs/channel/other_setting.md',
+                );
+              }}
+            >
+              {t('设置说明')}
+            </Typography.Text>
           </>
           <>
             <div style={{ marginTop: 10 }}>
               <Typography.Text strong>{t('参数覆盖')}：</Typography.Text>
             </div>
-            <TextArea
-              placeholder={
-                t(
-                  '此项可选，用于覆盖请求参数。不支持覆盖 stream 参数。为一个 JSON 字符串，例如：',
-                ) + '\n{\n  "temperature": 0\n}'
-              }
-              name='setting'
-              onChange={(value) => {
-                handleInputChange('param_override', value);
-              }}
-              autosize
-              value={inputs.param_override}
-              autoComplete='new-password'
+            <KeyValueList
+              pairs={paramOverrideList}
+              onChange={setParamOverrideList}
+              addText={t('添加一项')}
+              keyPlaceholder='key'
+              valuePlaceholder='value'
             />
           </>
           {inputs.type === 1 && (
@@ -1130,37 +1172,13 @@ const EditChannel = (props) => {
               {t('状态码复写（仅影响本地判断，不修改返回到上游的状态码）')}：
             </Typography.Text>
           </div>
-          <TextArea
-            placeholder={
-              t(
-                '此项可选，用于复写返回的状态码，比如将claude渠道的400错误复写为500（用于重试），请勿滥用该功能，例如：',
-              ) +
-              '\n' +
-              JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2)
-            }
-            name='status_code_mapping'
-            onChange={(value) => {
-              handleInputChange('status_code_mapping', value);
-            }}
-            autosize
-            value={inputs.status_code_mapping}
-            autoComplete='new-password'
+          <KeyValueList
+            pairs={statusCodeMappingList}
+            onChange={setStatusCodeMappingList}
+            addText={t('添加一项')}
+            keyPlaceholder='from'
+            valuePlaceholder='to'
           />
-          <Typography.Text
-            style={{
-              color: 'rgba(var(--semi-blue-5), 1)',
-              userSelect: 'none',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              handleInputChange(
-                'status_code_mapping',
-                JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2),
-              );
-            }}
-          >
-            {t('填入模板')}
-          </Typography.Text>
         </Spin>
         <ImagePreview
           src={modalImageUrl}
