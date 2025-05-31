@@ -1,5 +1,16 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig, transformWithEsbuild } from 'vite';
+import fs from 'fs';
+
+// 尝试读取版本号
+let version = '开发版本';
+try {
+  if (fs.existsSync('../VERSION')) {
+    version = fs.readFileSync('../VERSION', 'utf8').trim();
+  }
+} catch (e) {
+  console.error('读取版本号失败:', e);
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -29,6 +40,9 @@ export default defineConfig({
         '.json': 'json',
       },
     },
+  },
+  define: {
+    'import.meta.env.VITE_REACT_APP_VERSION': JSON.stringify(version),
   },
   build: {
     rollupOptions: {

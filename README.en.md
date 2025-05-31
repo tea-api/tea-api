@@ -1,7 +1,6 @@
 <p align="right">
   <strong><a href="./README.md">中文</a> | English</strong>
 </p>
-<div align="center">
 
 ![tea-api](/web/public/logo.png)
 
@@ -9,22 +8,21 @@
 
 [![License](https://img.shields.io/github/license/tea-api/tea-api)](https://github.com/tea-api/tea-api/blob/main/LICENSE) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tea-api/tea-api)](https://github.com/tea-api/tea-api/releases)
 
-API公益站系统
+API Public Station System
 
-
-基于原汁原味的 New API 体验, 对界面无大改动, 遵循 Apache 2.0 协议, 无商用限制, 承诺不变质.  
-添加极多原版不计划添加的特性. 以下只是部分.
+Based on the authentic New API experience, there are no major changes to the interface, adhering to the Apache 2.0 license, with no commercial restrictions, and a commitment to remain unchanged.  
+Many features that were not planned to be added in the original version have been included. The following is just a part.
 
 ## Table of Contents
 
-- [Features](#特性)
-- [Migration](#迁移)
-- [Deployment](#部署)
-- [Environment Variables](#环境变量)
+- [Features](#Features)
+- [Migration](#Migration)
+- [Deployment](#Deployment)
+- [Environment Variables](#Environment Variables)
 - [Star History](#-star-history)
 - [License](#license)
 
-## 特性
+## Features
 
 
 - 🚀 Full compatibility with the original new-api
@@ -35,43 +33,43 @@ API公益站系统
 - 🔌 Performance optimizations for faster response
 - 🐳 Comprehensive Docker support for easy deployment
 
-## 迁移
+## Migration
 
-本程序基于 new-api 二开, 数据库结构基本兼容, 会自动运行迁移.  
-其他类似程序不保证支持, 后续有计划做手动迁移指南.  
+This program is based on the second development of new-api, and the database structure is basically compatible, which will run migration automatically.  
+Other similar programs do not guarantee support, and there are plans to create a manual migration guide in the future.  
 
 ### new-api
 
-除了使用 SQLite, 均可无缝迁移.  
-对于 SQLite, 建议将 `one-api.db` 重命名为 `tea-api.db`, 系统会尝试自动处理, 但未经过测试. 
+Seamless migration is possible except for using SQLite.  
+For SQLite, it is recommended to rename `one-api.db` to `tea-api.db`, and the system will attempt to handle it automatically, but it has not been tested. 
 
-## 部署
+## Deployment
 
 > [!TIP]
-> 最新版 Docker 镜像：`ghcr.io/teapi/tea-api:latest`
+> Latest Docker image: `ghcr.io/teapi/tea-api:latest`
 
 ### docker-compose
 
-1. 克隆此仓库
+1. Clone this repository
 
 ```shell
 git clone https://github.com/tea-api/tea-api.git
 cd tea-api
 ```
 
-2. 修改配置文件
+2. Modify the configuration file
 
 ```shell
 nano docker-compose.yml
 ```
 
-3. 启动服务
+3. Start the service
 
 ```shell
 docker-compose up -d
 ```
 
-## 环境变量
+## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|

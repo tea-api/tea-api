@@ -1,7 +1,6 @@
 <p align="right">
   <strong><a href="./README.en.md">English</a> | 中文</strong>
 </p>
-<div align="center">
 
 <a href="https://github.com/tea-api/tea-api" target="_blank">
   <img src="/web/public/logo.png" alt="tea-api" width="100" height="100" />

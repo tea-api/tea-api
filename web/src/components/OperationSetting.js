@@ -15,7 +15,7 @@ import SettingsChannelStats from '../pages/Setting/Operation/SettingsChannelStat
 import { API, showError, showSuccess } from '../helpers';
 import SettingsChats from '../pages/Setting/Operation/SettingsChats.js';
 import { useTranslation } from 'react-i18next';
-import ModelRatioNotSetEditor from '../pages/Setting/Operation/ModelRationNotSetEditor.js';
+import ModelRatioNotSetEditor from '../pages/Setting/Operation/ModelRatioNotSetEditor.js';
 
 const OperationSetting = () => {
   const { t } = useTranslation();

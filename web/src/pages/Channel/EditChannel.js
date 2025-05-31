@@ -598,7 +598,7 @@ const EditChannel = (props) => {
                 </div>
                 <Tooltip
                   content={t(
-                    '对于官方渠道，new-api已经内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写',
+                    '对于官方渠道，tea-api已经内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写',
                   )}
                 >
                   <Input
