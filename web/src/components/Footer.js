@@ -13,7 +13,7 @@ const FooterBar = () => {
 
   const loadFooter = () => {
     let footer_html = localStorage.getItem('footer_html');
-    if (footer_html) {
+    if (footer_html && footer_html !== 'undefined') {
       setFooter(footer_html);
     }
   };
@@ -61,7 +61,7 @@ const FooterBar = () => {
         paddingBottom: '5px',
       }}
     >
-      {footer ? (
+      {footer && footer !== 'undefined' ? (
         <div
           className='custom-footer'
           dangerouslySetInnerHTML={{ __html: footer }}
