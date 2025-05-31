@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 	"tea-api/common"
 	"tea-api/service"
 
@@ -80,6 +81,37 @@ func GetCheckinStatus(c *gin.Context) {
 
 // GetCheckinConfig 获取签到配置信息
 func GetCheckinConfig(c *gin.Context) {
+	// 构建特殊奖励数据
+	specialRewards := []map[string]interface{}{}
+	for i, day := range common.SpecialRewardDays {
+		if i < len(common.SpecialRewards) {
+			reward := common.SpecialRewards[i]
+			var name, description string
+
+			// 根据天数设置不同的名称和描述
+			if day == 7 {
+				name = "周奖励"
+				description = "连续签到7天可获得额外奖励"
+			} else if day == 15 {
+				name = "半月奖励"
+				description = "连续签到15天可获得额外奖励"
+			} else if day == 30 {
+				name = "月奖励"
+				description = "连续签到30天可获得额外奖励"
+			} else {
+				name = "特殊奖励"
+				description = "连续签到" + strconv.Itoa(day) + "天可获得额外奖励"
+			}
+
+			specialRewards = append(specialRewards, map[string]interface{}{
+				"name":        name,
+				"description": description,
+				"day":         day,
+				"reward":      reward,
+			})
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -90,7 +122,9 @@ func GetCheckinConfig(c *gin.Context) {
 				"continuous_reward": common.ContinuousCheckinReward,
 				"max_days":          common.MaxContinuousRewardDays,
 				"special_days":      common.SpecialRewardDays,
-				"special_rewards":   common.SpecialRewards,
+				"special_rewards":   specialRewards,
+				"weekly_bonus":      20000, // 周奖励
+				"monthly_bonus":     50000, // 月奖励
 				"streak_reset":      common.CheckinStreakReset,
 			},
 		},

@@ -213,12 +213,12 @@ const Checkin = () => {
                   {specialRewards.length > 0 && specialRewards.map((reward, index) => (
                     <div key={index} className="special-reward-item">
                       <Tag color="orange" size="large">
-                        {reward.name}
-                        <Tooltip content={reward.description}>
+                        {t(reward.name)}
+                        <Tooltip content={t(reward.description)}>
                           <IconHelpCircle style={{ marginLeft: '4px' }} />
                         </Tooltip>
                       </Tag>
-                      <Text>{reward.description}</Text>
+                      <Text>{t(reward.description)} <span className="highlight">{formatQuota(reward.reward)}</span> {t('配额')}</Text>
                     </div>
                   ))}
                 </div>

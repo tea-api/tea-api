@@ -37,7 +37,7 @@ const FooterBar = () => {
         target='_blank'
         rel='noreferrer'
       >
-        One API
+        New API
       </a>
     </div>
   );
