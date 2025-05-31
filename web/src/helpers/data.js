@@ -5,6 +5,12 @@ export function setStatusData(data) {
   if (data.footer !== undefined) {
     localStorage.setItem('footer_html', data.footer);
   }
+  if (data.linuxdo_client_id) {
+    console.log('Saving LinuxDO client ID:', data.linuxdo_client_id);
+    localStorage.setItem('linuxdo_client_id', data.linuxdo_client_id);
+  } else {
+    console.warn('LinuxDO client ID not found in status data');
+  }
   localStorage.setItem('quota_per_unit', data.quota_per_unit);
   localStorage.setItem('display_in_currency', data.display_in_currency);
   localStorage.setItem('enable_drawing', data.enable_drawing);

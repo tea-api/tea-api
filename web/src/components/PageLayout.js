@@ -32,6 +32,8 @@ const PageLayout = () => {
       const res = await API.get('/api/status');
       const { success, data } = res.data;
       if (success) {
+        console.log('Status API response:', data);
+        console.log('LinuxDO client ID in status:', data.linuxdo_client_id);
         statusDispatch({ type: 'set', payload: data });
         setStatusData(data);
       } else {

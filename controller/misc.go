@@ -35,6 +35,9 @@ func GetStatus(c *gin.Context) {
 	// 获取通用设置
 	generalSetting := operation_setting.GetGeneralSetting()
 
+	// 添加调试日志
+	common.SysLog("GetStatus: LinuxDOClientId = " + common.LinuxDOClientId)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",

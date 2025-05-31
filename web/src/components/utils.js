@@ -42,12 +42,20 @@ export async function onLinuxDOOAuthClicked(linuxdo_client_id) {
   const state = await getOAuthState();
   if (!state) return;
   
-  console.log('Linux DO OAuth clicked, client_id:', linuxdo_client_id);
-  
+  // 如果传入的client_id为undefined，尝试从localStorage获取
   if (!linuxdo_client_id) {
-    console.error('Linux DO client ID is undefined!');
-    return;
+    const storedClientId = localStorage.getItem('linuxdo_client_id');
+    console.log('LinuxDO client ID from localStorage:', storedClientId);
+    
+    if (storedClientId) {
+      linuxdo_client_id = storedClientId;
+    } else {
+      console.error('Linux DO client ID is undefined and not found in localStorage!');
+      return;
+    }
   }
+  
+  console.log('Linux DO OAuth clicked, using client_id:', linuxdo_client_id);
   
   window.open(
     `https://connect.linux.do/oauth2/authorize?response_type=code&client_id=${linuxdo_client_id}&state=${state}`,
