@@ -3,7 +3,9 @@
 </p>
 <div align="center">
 
-<img src="/web/public/logo.png" alt="tea-api" width="100" height="100" />
+<a href="https://github.com/tea-api/tea-api" target="_blank">
+  <img src="/web/public/logo.png" alt="tea-api" width="100" height="100" />
+</a>
 
 # Veloera
 
