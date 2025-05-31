@@ -97,6 +97,16 @@ func UpdateModelPricing(c *gin.Context) {
 		completionRatio = outputPerM / inputPerM
 	}
 
+	// 获取当前模型信息，确定是按量计费还是按次计费
+	pricing := model.GetPricing()
+	var currentModel *model.Pricing
+	for _, p := range pricing {
+		if p.ModelName == req.ModelName {
+			currentModel = &p
+			break
+		}
+	}
+
 	var ratioMap map[string]float64
 	_ = json.Unmarshal([]byte(operation_setting.ModelRatio2JSONString()), &ratioMap)
 	if ratioMap == nil {
@@ -120,6 +130,12 @@ func UpdateModelPricing(c *gin.Context) {
 			newPriceMap[k] = v
 		}
 	}
+
+	// 如果是按次计费模型，则保存价格
+	if currentModel != nil && currentModel.QuotaType == 1 {
+		newPriceMap[req.ModelName] = req.InputPrice
+	}
+
 	priceBytes, _ := json.Marshal(newPriceMap)
 
 	if err := model.UpdateOption("ModelRatio", string(ratioBytes)); err != nil {

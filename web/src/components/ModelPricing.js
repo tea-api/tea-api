@@ -70,11 +70,23 @@ const ModelPricing = () => {
   };
 
   const openEdit = (record) => {
-    const base = 0.002;
-    setInputPrice((record.model_ratio * base).toFixed(3));
-    setOutputPrice(
-      (record.model_ratio * record.completion_ratio * base).toFixed(3),
-    );
+    // 使用与后端一致的基准价格计算方式
+    const basePerM = 2.0;
+    const base = basePerM / 1000; // 转换为每千 tokens 的价格
+    
+    // 根据模型类型设置初始价格
+    if (record.quota_type === 0) {
+      // 按量计费模型
+      setInputPrice((record.model_ratio * base).toFixed(3));
+      setOutputPrice(
+        (record.model_ratio * record.completion_ratio * base).toFixed(3),
+      );
+    } else {
+      // 按次计费模型
+      setInputPrice(record.model_price.toFixed(3));
+      setOutputPrice('0');
+    }
+    
     setPriceUnit('1k');
     setEditModel(record);
     setEditVisible(true);
@@ -282,30 +294,35 @@ const ModelPricing = () => {
       render: (text, record, index) => {
         let content = text;
         if (record.quota_type === 0) {
-          // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
-          let inputRatioPrice =
-            record.model_ratio * 2 * groupRatio[selectedGroup];
-          let completionRatioPrice =
-            record.model_ratio *
-            record.completion_ratio *
-            2 *
-            groupRatio[selectedGroup];
+          // 按量计费模型
+          // 使用与后端一致的基准价格计算方式 - 1倍率=0.002刀
+          const basePerM = 2.0;
+          const base = basePerM / 1000; // 转换为每千 tokens 的价格
+          
+          let inputRatioPrice = record.model_ratio * base * groupRatio[selectedGroup];
+          let completionRatioPrice = record.model_ratio * record.completion_ratio * base * groupRatio[selectedGroup];
+          
+          // 显示为每1M tokens的价格
+          let inputRatioPricePerM = inputRatioPrice * 1000;
+          let completionRatioPricePerM = completionRatioPrice * 1000;
+          
           content = (
             <>
               <Text>
-                {t('提示')} ${inputRatioPrice} / 1M tokens
+                {t('提示')} ${inputRatioPricePerM.toFixed(3)} / 1M tokens
               </Text>
               <br />
               <Text>
-                {t('补全')} ${completionRatioPrice} / 1M tokens
+                {t('补全')} ${completionRatioPricePerM.toFixed(3)} / 1M tokens
               </Text>
             </>
           );
         } else {
+          // 按次计费模型
           let price = parseFloat(text) * groupRatio[selectedGroup];
           content = (
             <>
-              ${t('模型价格')}：${price}
+              {t('模型价格')}：${price.toFixed(3)}
             </>
           );
         }
