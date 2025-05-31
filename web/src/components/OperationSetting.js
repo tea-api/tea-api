@@ -10,6 +10,7 @@ import SettingsCreditLimit from '../pages/Setting/Operation/SettingsCreditLimit.
 import ModelSettingsVisualEditor from '../pages/Setting/Operation/ModelSettingsVisualEditor.js';
 import GroupRatioSettings from '../pages/Setting/Operation/GroupRatioSettings.js';
 import ModelRatioSettings from '../pages/Setting/Operation/ModelRatioSettings.js';
+import SettingsChannelStats from '../pages/Setting/Operation/SettingsChannelStats.js';
 
 import { API, showError, showSuccess } from '../helpers';
 import SettingsChats from '../pages/Setting/Operation/SettingsChats.js';
@@ -142,6 +143,10 @@ const OperationSetting = () => {
         {/* 监控设置 */}
         <Card style={{ marginTop: '10px' }}>
           <SettingsMonitoring options={inputs} refresh={onRefresh} />
+        </Card>
+        {/* 线路监控 */}
+        <Card style={{ marginTop: '10px' }}>
+          <SettingsChannelStats />
         </Card>
         {/* 额度设置 */}
         <Card style={{ marginTop: '10px' }}>

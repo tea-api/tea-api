@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   tea-api:
-    image: tea-api/tea-api:latest
+    image: teapi/tea-api:latest
     build:
       context: .
       dockerfile: Dockerfile

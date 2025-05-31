@@ -7,7 +7,7 @@
   <img src="/web/public/logo.png" alt="tea-api" width="100" height="100" />
 </a>
 
-# Veloera
+# Tea-API
 
 [![License](https://img.shields.io/github/license/tea-api/tea-api)](https://github.com/tea-api/tea-api/blob/main/LICENSE) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tea-api/tea-api)](https://github.com/tea-api/tea-api/releases)
 
@@ -39,7 +39,7 @@ API公益站系统
 ## 部署
 
 > [!TIP]
-> 最新版 Docker 镜像：`ghcr.io/veloera/veloera:latest`
+> 最新版 Docker 镜像：`ghcr.io/teapi/tea-api:latest`
 
 ### docker-compose
 
@@ -47,7 +47,7 @@ API公益站系统
 
 ```shell
 git clone https://github.com/tea-api/tea-api.git
-cd veloera
+cd tea-api
 ```
 
 2. 修改配置文件
@@ -65,7 +65,7 @@ docker-compose up -d --build
 如需单独构建镜像，可执行：
 
 ```shell
-docker build -t tea-api/tea-api:latest .
+docker build -t teapi/tea-api:latest .
 ```
 
 ## 环境变量
