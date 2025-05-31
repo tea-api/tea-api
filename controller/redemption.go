@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"tea-api/common"
 	"tea-api/model"
 
@@ -112,13 +113,22 @@ func AddRedemption(c *gin.Context) {
 		})
 		return
 	}
-	if redemption.Key != "" && redemption.Count > 1 {
+
+	// 检查是否是完全自定义的兑换码
+	isFullyCustom := redemption.Key != "" && !strings.HasSuffix(redemption.Key, "*")
+
+	// 检查是否是带前缀的批量生成
+	isCustomPrefix := redemption.Key != "" && strings.HasSuffix(redemption.Key, "*")
+
+	// 完全自定义的兑换码只能生成一个
+	if isFullyCustom && redemption.Count > 1 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "自定义兑换码只能生成一个",
 		})
 		return
 	}
+
 	if redemption.Count <= 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -138,14 +148,24 @@ func AddRedemption(c *gin.Context) {
 	}
 	var keys []string
 	total := redemption.Count
-	if redemption.Key != "" {
+	if isFullyCustom {
 		total = 1
 	}
+
 	for i := 0; i < total; i++ {
-		key := redemption.Key
-		if key == "" {
+		var key string
+		if isFullyCustom {
+			// 完全自定义兑换码
+			key = redemption.Key
+		} else if isCustomPrefix {
+			// 带前缀的批量生成
+			prefix := strings.TrimSuffix(redemption.Key, "*")
+			key = prefix + common.GetUUID()[:16] // 使用较短的UUID
+		} else {
+			// 完全随机生成
 			key = common.GetUUID()
 		}
+
 		cleanRedemption := model.Redemption{
 			UserId:      c.GetInt("id"),
 			Name:        redemption.Name,

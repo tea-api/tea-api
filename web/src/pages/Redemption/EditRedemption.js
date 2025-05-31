@@ -218,6 +218,9 @@ const EditRedemption = (props) => {
                 value={key}
                 autoComplete='new-password'
               />
+              <Typography.Text type="tertiary" style={{ marginTop: 4, display: 'block' }}>
+                {t('可以输入完整兑换码（仅限生成1个）或输入前缀+"*"批量生成（如"GIFT2024*"）')}
+              </Typography.Text>
             </>
           )}
           <Divider />
@@ -245,6 +248,11 @@ const EditRedemption = (props) => {
             ]}
           />
           <Divider />
+          <div style={{ marginTop: 20 }}>
+            <Typography.Text>
+              {t('最多可用次数') + '（每个兑换码可被使用的最大次数）'}
+            </Typography.Text>
+          </div>
           <Input
             style={{ marginTop: 8 }}
             label={t('最多使用次数')}

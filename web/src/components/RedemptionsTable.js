@@ -5,6 +5,7 @@ import {
   showError,
   showSuccess,
   timestamp2string,
+  downloadTextAsFile,
 } from '../helpers';
 
 import { ITEMS_PER_PAGE } from '../constants';
@@ -18,6 +19,7 @@ import {
   Popover,
   Table,
   Tag,
+  Input,
 } from '@douyinfe/semi-ui';
 import EditRedemption from '../pages/Redemption/EditRedemption';
 import { useTranslation } from 'react-i18next';
@@ -85,6 +87,13 @@ const RedemptionsTable = () => {
     {
       title: t('最多使用次数'),
       dataIndex: 'max_times',
+      render: (text, record) => {
+        return (
+          <Popover content={t('每个兑换码可被使用的最大次数')} position='top'>
+            <div>{text}</div>
+          </Popover>
+        );
+      },
     },
     {
       title: t('已使用次数'),
@@ -267,7 +276,8 @@ const RedemptionsTable = () => {
   }, []);
 
   const refresh = async () => {
-    await loadRedemptions(activePage - 1, pageSize);
+    setLoading(true);
+    await loadRedemptions(1, pageSize);
   };
 
   const manageRedemption = async (id, action, record) => {
@@ -371,6 +381,88 @@ const RedemptionsTable = () => {
     }
   };
 
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  const batchGenerateRedemptions = () => {
+    let formApi;
+    Modal.confirm({
+      title: t('批量生成兑换码'),
+      content: (
+        <div>
+          <Form getFormApi={(api) => { formApi = api; }}>
+            <Form.Input 
+              field="prefix" 
+              label={t('兑换码前缀')} 
+              placeholder={t('例如：GIFT2024')} 
+              initValue="GIFT"
+            />
+            <Form.InputNumber 
+              field="count" 
+              label={t('生成数量')} 
+              placeholder={t('1-100')} 
+              initValue={10}
+              min={1} 
+              max={100}
+            />
+            <Form.InputNumber 
+              field="quota" 
+              label={t('额度')} 
+              placeholder={t('兑换码额度')} 
+              initValue={100000}
+            />
+            <Form.InputNumber 
+              field="maxTimes" 
+              label={t('最多使用次数')} 
+              placeholder={t('每个兑换码可使用次数')} 
+              initValue={1}
+              min={1}
+            />
+          </Form>
+        </div>
+      ),
+      onOk: async () => {
+        const values = formApi.getValues();
+        if (!values.prefix) {
+          showError(t('请输入兑换码前缀'));
+          return;
+        }
+        const res = await API.post('/api/redemption/', {
+          name: values.prefix,
+          key: values.prefix + '*',
+          count: values.count || 10,
+          quota: values.quota || 100000,
+          max_times: values.maxTimes || 1,
+          expired_time: -1
+        });
+        const { success, message, data } = res.data;
+        if (success) {
+          showSuccess(t('兑换码批量生成成功！'));
+          let text = '';
+          for (let i = 0; i < data.length; i++) {
+            text += data[i] + '\n';
+          }
+          Modal.confirm({
+            title: t('兑换码创建成功'),
+            content: (
+              <div>
+                <p>{t('兑换码创建成功，是否下载兑换码？')}</p>
+                <p>{t('兑换码将以文本文件的形式下载，文件名为兑换码的前缀。')}</p>
+              </div>
+            ),
+            onOk: () => {
+              downloadTextAsFile(text, `${values.prefix}.txt`);
+            },
+          });
+          refresh();
+        } else {
+          showError(message);
+        }
+      },
+    });
+  };
+
   return (
     <>
       <EditRedemption
@@ -396,40 +488,29 @@ const RedemptionsTable = () => {
         />
       </Form>
       <Divider style={{ margin: '5px 0 15px 0' }} />
-      <div>
-        <Button
-          theme='light'
-          type='primary'
-          style={{ marginRight: 8 }}
-          onClick={() => {
-            setEditingRedemption({
-              id: undefined,
-            });
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Button theme='light' type='primary' style={{ marginRight: 8 }} onClick={() => {
+            setEditingRedemption({});
             setShowEdit(true);
-          }}
-        >
-          {t('添加兑换码')}
-        </Button>
-        <Button
-          label={t('复制所选兑换码')}
-          type='warning'
-          onClick={async () => {
-            if (selectedKeys.length === 0) {
-              showError(t('请至少选择一个兑换码！'));
-              return;
-            }
-            let keys = '';
-            for (let i = 0; i < selectedKeys.length; i++) {
-              keys +=
-                selectedKeys[i].name + '    ' + selectedKeys[i].key + '\n';
-            }
-            await copyText(keys);
-          }}
-        >
-          {t('复制所选兑换码到剪贴板')}
-        </Button>
+          }}>
+            {t('添加')}
+          </Button>
+          <Button theme='light' type='secondary' onClick={batchGenerateRedemptions}>
+            {t('批量生成')}
+          </Button>
+        </div>
+        <div>
+          <Input
+            style={{ width: 300 }}
+            showClear
+            prefix={<i className="fa fa-search" aria-hidden="true"></i>}
+            placeholder={t('搜索兑换码')}
+            onChange={(value) => handleKeywordChange(value)}
+            value={searchKeyword}
+          />
+        </div>
       </div>
-
       <Table
         style={{ marginTop: 20 }}
         columns={columns}
