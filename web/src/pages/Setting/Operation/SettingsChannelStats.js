@@ -13,13 +13,17 @@ export default function SettingsChannelStats() {
     try {
       const res = await API.get('/api/channel/stats');
       if (res.data.success) {
-        setStats(res.data.data);
+        // 确保data是数组
+        const data = Array.isArray(res.data.data) ? res.data.data : [];
+        setStats(data);
       } else {
         showError(t(res.data.message));
       }
     } catch (error) {
       showError(t('获取线路监控数据失败'));
       console.error('Error fetching channel stats:', error);
+      // 发生错误时设置为空数组
+      setStats([]);
     } finally {
       setLoading(false);
     }
@@ -101,7 +105,7 @@ export default function SettingsChannelStats() {
       <Spin spinning={loading}>
         <Table
           columns={columns}
-          dataSource={stats}
+          dataSource={stats || []}
           pagination={false}
           rowKey="id"
           empty={t('暂无数据')}
