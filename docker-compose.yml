@@ -1,52 +1,106 @@
-version: '3.4'
+version: '3.8'
 
 services:
-  new-api:
-    image: calciumion/new-api:latest
-    container_name: new-api
+  tea-api:
+    image: tea-api/tea-api:latest
+    container_name: tea-api
     restart: always
     command: --log-dir /app/logs
     ports:
       - "3000:3000"
     volumes:
-      - ./data:/data
-      - ./logs:/app/logs
+      - ./data:/data                # SQLite数据库和其他数据存储
+      - ./logs:/app/logs            # 日志文件
+      - ./tiktoken_cache:/app/tiktoken_cache  # tiktoken缓存目录
     environment:
-      - SQL_DSN=root:123456@tcp(mysql:3306)/new-api  # Point to the mysql service
-      - REDIS_CONN_STRING=redis://redis
-      - TZ=Asia/Shanghai
-      - ERROR_LOG_ENABLED=true # 是否启用错误日志记录
-    #      - TIKTOKEN_CACHE_DIR=./tiktoken_cache  # 如果需要使用tiktoken_cache，请取消注释
-    #      - SESSION_SECRET=random_string  # 多机部署时设置，必须修改这个随机字符串！！！！！！！
-    #      - NODE_TYPE=slave  # Uncomment for slave node in multi-node deployment
-    #      - SYNC_FREQUENCY=60  # Uncomment if regular database syncing is needed
-    #      - FRONTEND_BASE_URL=https://openai.justsong.cn  # Uncomment for multi-node deployment with front-end URL
-
+      - SQL_DSN=root:123456@tcp(mysql:3306)/tea-api  # MySQL数据库连接
+      - REDIS_CONN_STRING=redis://redis:6379        # Redis连接
+      - TZ=Asia/Shanghai                            # 时区设置
+      - ERROR_LOG_ENABLED=true                      # 启用错误日志记录
+      - TIKTOKEN_CACHE_DIR=/app/tiktoken_cache      # tiktoken缓存目录
+      # - SESSION_SECRET=your_random_string         # 多机部署时必须设置，设置一个随机字符串
+      # - CRYPTO_SECRET=your_crypto_key             # 加密密钥，用于加密数据库内容
+      # - NODE_TYPE=master                          # 节点类型，可选值：master, slave
+      # - SYNC_FREQUENCY=60                         # 数据库同步频率（秒）
+      # - FRONTEND_BASE_URL=https://your-domain.com # 前端基础URL，用于多节点部署
+      # - MEMORY_CACHE_ENABLED=true                 # 启用内存缓存（如果未设置Redis）
+      # - RATE_LIMIT_ENABLED=true                   # 启用速率限制
+      # - RATE_LIMIT_REDIS=redis://redis:6379       # 速率限制Redis连接
     depends_on:
       - redis
       - mysql
+    networks:
+      - tea-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' | awk -F: '{print $$2}'"]
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
   redis:
-    image: redis:latest
-    container_name: redis
+    image: redis:7-alpine
+    container_name: tea-redis
     restart: always
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes  # 启用AOF持久化
+    networks:
+      - tea-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   mysql:
-    image: mysql:8.2
-    container_name: mysql
+    image: mysql:8.0
+    container_name: tea-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 123456  # Ensure this matches the password in SQL_DSN
-      MYSQL_DATABASE: new-api
+      MYSQL_ROOT_PASSWORD: 123456        # 设置MySQL root密码
+      MYSQL_DATABASE: tea-api            # 创建数据库
+      MYSQL_USER: tea-api                # 创建用户（可选）
+      MYSQL_PASSWORD: tea-api-password   # 设置用户密码（可选）
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql        # MySQL数据持久化
+      - ./mysql/init:/docker-entrypoint-initdb.d  # 初始化脚本（可选）
+    networks:
+      - tea-network
     # ports:
-    #   - "3306:3306"  # If you want to access MySQL from outside Docker, uncomment
+    #   - "3306:3306"  # 如需从外部访问MySQL，请取消注释
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # 可选：添加Nginx反向代理
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: tea-nginx
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d
+  #     - ./nginx/ssl:/etc/nginx/ssl
+  #     - ./nginx/logs:/var/log/nginx
+  #   depends_on:
+  #     - tea-api
+  #   networks:
+  #     - tea-network
 
 volumes:
   mysql_data:
+    name: tea-api-mysql-data
+  redis_data:
+    name: tea-api-redis-data
+
+networks:
+  tea-network:
+    name: tea-api-network
+    driver: bridge

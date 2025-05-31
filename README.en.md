@@ -1,190 +1,64 @@
 <p align="right">
-   <a href="./README.md">中文</a> | <strong>English</strong>
+   <a href="./README.en.md">English</a> | <strong>中文</strong>
 </p>
 <div align="center">
 
-![new-api](/web/public/logo.png)
+![tea-api](/web/public/logo.png)
 
-# Tea API
+# Veloera
 
-🍥 Next-Generation Large Model Gateway and AI Asset Management System
+[![License](https://img.shields.io/github/license/tea-api/tea-api)](https://github.com/tea-api/tea-api/blob/main/LICENSE) [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tea-api/tea-api)](https://github.com/tea-api/tea-api/releases)
 
-<a href="https://trendshift.io/repositories/8227" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8227" alt="tea-api%2Ftea-api | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+API公益站系统
 
-<p align="center">
-  <a href="https://raw.githubusercontent.com/tea-api/tea-api/main/LICENSE">
-    <img src="https://img.shields.io/github/license/tea-api/tea-api?color=brightgreen" alt="license">
-  </a>
-  <a href="https://github.com/tea-api/tea-api/releases/latest">
-    <img src="https://img.shields.io/github/v/release/tea-api/tea-api?color=brightgreen&include_prereleases" alt="release">
-  </a>
-  <a href="https://github.com/users/tea-api/packages/container/package/tea-api">
-    <img src="https://img.shields.io/badge/docker-ghcr.io-blue" alt="docker">
-  </a>
-  <a href="https://hub.docker.com/r/tea-api/tea-api">
-    <img src="https://img.shields.io/badge/docker-dockerHub-blue" alt="docker">
-  </a>
-  <a href="https://goreportcard.com/report/github.com/tea-api/tea-api">
-    <img src="https://goreportcard.com/badge/github.com/tea-api/tea-api" alt="GoReportCard">
-  </a>
-</p>
-</div>
 
-## 📝 Project Description
+基于原汁原味的 New API 体验, 对界面无大改动, 遵循 Apache 2.0 协议, 无商用限制, 承诺不变质.  
+添加极多原版不计划添加的特性. 以下只是部分.  
 
-> [!NOTE]  
-> This is an open-source project developed based on [One API](https://github.com/songquanpeng/one-api)
+## 特性
 
-> [!IMPORTANT]  
-> - This project is for personal learning purposes only, with no guarantee of stability or technical support.
-> - Users must comply with OpenAI's [Terms of Use](https://openai.com/policies/terms-of-use) and **applicable laws and regulations**, and must not use it for illegal purposes.
-> - According to the [《Interim Measures for the Management of Generative Artificial Intelligence Services》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm), please do not provide any unregistered generative AI services to the public in China.
 
-## 📚 Documentation
 
-For detailed documentation, please visit our official Wiki: [https://docs.newapi.pro/](https://docs.newapi.pro/)
+## 迁移
 
-## ✨ Key Features
+本程序基于 new-api 二开, 数据库结构基本兼容, 会自动运行迁移.  
+其他类似程序不保证支持, 后续有计划做手动迁移指南.  
 
-Tea API offers a wide range of features, please refer to [Features Introduction](https://docs.newapi.pro/wiki/features-introduction) for details:
+### new-api
 
-1. 🎨 Brand new UI interface
-2. 🌍 Multi-language support
-3. 💰 Online recharge functionality (YiPay)
-4. 🔍 Support for querying usage quotas with keys (works with [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool))
-5. 🔄 Compatible with the original One API database
-6. 💵 Support for pay-per-use model pricing
-7. ⚖️ Support for weighted random channel selection
-8. 📈 Data dashboard (console)
-9. 🔒 Token grouping and model restrictions
-10. 🤖 Support for more authorization login methods (LinuxDO, Telegram, OIDC)
-11. 🔄 Support for Rerank models (Cohere and Jina), [API Documentation](https://docs.newapi.pro/api/jinaai-rerank)
-12. ⚡ Support for OpenAI Realtime API (including Azure channels), [API Documentation](https://docs.newapi.pro/api/openai-realtime)
-13. ⚡ Support for Claude Messages format, [API Documentation](https://docs.newapi.pro/api/anthropic-chat)
-14. Support for entering chat interface via /chat2link route
-15. 🧠 Support for setting reasoning effort through model name suffixes:
-    1. OpenAI o-series models
-        - Add `-high` suffix for high reasoning effort (e.g.: `o3-mini-high`)
-        - Add `-medium` suffix for medium reasoning effort (e.g.: `o3-mini-medium`)
-        - Add `-low` suffix for low reasoning effort (e.g.: `o3-mini-low`)
-    2. Claude thinking models
-        - Add `-thinking` suffix to enable thinking mode (e.g.: `claude-3-7-sonnet-20250219-thinking`)
-16. 🔄 Thinking-to-content functionality
-17. 🔄 Model rate limiting for users
-18. 💰 Cache billing support, which allows billing at a set ratio when cache is hit:
-    1. Set the `Prompt Cache Ratio` option in `System Settings-Operation Settings`
-    2. Set `Prompt Cache Ratio` in the channel, range 0-1, e.g., setting to 0.5 means billing at 50% when cache is hit
-    3. Supported channels:
-        - [x] OpenAI
-        - [x] Azure
-        - [x] DeepSeek
-        - [x] Claude
+除了使用 SQLite, 均可无缝迁移.  
+对于 SQLite, 建议将 `one-api.db` 重命名为 `tea-api.db`, 系统会尝试自动处理, 但未经过测试. 
 
-## Model Support
-
-This version supports multiple models, please refer to [API Documentation-Relay Interface](https://docs.newapi.pro/api) for details:
-
-1. Third-party models **gpts** (gpt-4-gizmo-*)
-2. Third-party channel [Midjourney-Proxy(Plus)](https://github.com/novicezk/midjourney-proxy) interface, [API Documentation](https://docs.newapi.pro/api/midjourney-proxy-image)
-3. Third-party channel [Suno API](https://github.com/Suno-API/Suno-API) interface, [API Documentation](https://docs.newapi.pro/api/suno-music)
-4. Custom channels, supporting full call address input
-5. Rerank models ([Cohere](https://cohere.ai/) and [Jina](https://jina.ai/)), [API Documentation](https://docs.newapi.pro/api/jinaai-rerank)
-6. Claude Messages format, [API Documentation](https://docs.newapi.pro/api/anthropic-chat)
-7. Dify, currently only supports chatflow
-
-## Environment Variable Configuration
-
-For detailed configuration instructions, please refer to [Installation Guide-Environment Variables Configuration](https://docs.newapi.pro/installation/environment-variables):
-
-- `GENERATE_DEFAULT_TOKEN`: Whether to generate initial tokens for newly registered users, default is `false`
-- `STREAMING_TIMEOUT`: Streaming response timeout, default is 60 seconds
-- `DIFY_DEBUG`: Whether to output workflow and node information for Dify channels, default is `true`
-- `FORCE_STREAM_OPTION`: Whether to override client stream_options parameter, default is `true`
-- `GET_MEDIA_TOKEN`: Whether to count image tokens, default is `true`
-- `GET_MEDIA_TOKEN_NOT_STREAM`: Whether to count image tokens in non-streaming cases, default is `true`
-- `UPDATE_TASK`: Whether to update asynchronous tasks (Midjourney, Suno), default is `true`
-- `COHERE_SAFETY_SETTING`: Cohere model safety settings, options are `NONE`, `CONTEXTUAL`, `STRICT`, default is `NONE`
-- `GEMINI_VISION_MAX_IMAGE_NUM`: Maximum number of images for Gemini models, default is `16`
-- `MAX_FILE_DOWNLOAD_MB`: Maximum file download size in MB, default is `20`
-- `CRYPTO_SECRET`: Encryption key used for encrypting database content
-- `AZURE_DEFAULT_API_VERSION`: Azure channel default API version, default is `2025-04-01-preview`
-- `NOTIFICATION_LIMIT_DURATION_MINUTE`: Notification limit duration, default is `10` minutes
-- `NOTIFY_LIMIT_COUNT`: Maximum number of user notifications within the specified duration, default is `2`
-
-## Deployment
-
-For detailed deployment guides, please refer to [Installation Guide-Deployment Methods](https://docs.newapi.pro/installation):
+## 部署
 
 > [!TIP]
-> Latest Docker image: `tea-api/tea-api:latest`
+> 最新版 Docker 镜像：`ghcr.io/veloera/veloera:latest`
 
-### Multi-machine Deployment Considerations
-- Environment variable `SESSION_SECRET` must be set, otherwise login status will be inconsistent across multiple machines
-- If sharing Redis, `CRYPTO_SECRET` must be set, otherwise Redis content cannot be accessed across multiple machines
+### docker-compose
 
-### Deployment Requirements
-- Local database (default): SQLite (Docker deployment must mount the `/data` directory)
-- Remote database: MySQL version >= 5.7.8, PgSQL version >= 9.6
+1. 克隆此仓库
 
-### Deployment Methods
-
-#### Using BaoTa Panel Docker Feature
-Install BaoTa Panel (version **9.2.0** or above), find **New-API** in the application store and install it.
-[Tutorial with images](./docs/BT.md)
-
-#### Using Docker Compose (Recommended)
 ```shell
-# Download the project
 git clone https://github.com/tea-api/tea-api.git
-cd new-api
-# Edit docker-compose.yml as needed
-# Start
+cd veloera
+```
+
+2. 修改配置文件
+
+```shell
+nano docker-compose.yml
+```
+
+3. 启动服务
+
+```shell
 docker-compose up -d
 ```
 
-#### Using Docker Image Directly
-```shell
-# Using SQLite
-docker run --name new-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data tea-api/tea-api:latest
+## 环境变量
 
-# Using MySQL
-docker run --name new-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/new-api:/data tea-api/tea-api:latest
-```
 
-## Channel Retry and Cache
-Channel retry functionality has been implemented, you can set the number of retries in `Settings->Operation Settings->General Settings`. It is **recommended to enable caching**.
-
-### Cache Configuration Method
-1. `REDIS_CONN_STRING`: Set Redis as cache
-2. `MEMORY_CACHE_ENABLED`: Enable memory cache (no need to set manually if Redis is set)
-
-## API Documentation
-
-For detailed API documentation, please refer to [API Documentation](https://docs.newapi.pro/api):
-
-- [Chat API](https://docs.newapi.pro/api/openai-chat)
-- [Image API](https://docs.newapi.pro/api/openai-image)
-- [Rerank API](https://docs.newapi.pro/api/jinaai-rerank)
-- [Realtime API](https://docs.newapi.pro/api/openai-realtime)
-- [Claude Chat API (messages)](https://docs.newapi.pro/api/anthropic-chat)
-
-## Related Projects
-- [One API](https://github.com/songquanpeng/one-api): Original project
-- [Midjourney-Proxy](https://github.com/novicezk/midjourney-proxy): Midjourney interface support
-- [chatnio](https://github.com/Deeptrain-Community/chatnio): Next-generation AI one-stop B/C-end solution
-- [neko-api-key-tool](https://github.com/Calcium-Ion/neko-api-key-tool): Query usage quota with key
-
-Other projects based on Tea API:
-- [new-api-horizon](https://github.com/Calcium-Ion/new-api-horizon): High-performance optimized version of Tea API
-- [VoAPI](https://github.com/VoAPI/VoAPI): Frontend beautified version based on Tea API
-
-## Help and Support
-
-If you have any questions, please refer to [Help and Support](https://docs.newapi.pro/support):
-- [Community Interaction](https://docs.newapi.pro/support/community-interaction)
-- [Issue Feedback](https://docs.newapi.pro/support/feedback-issues)
-- [FAQ](https://docs.newapi.pro/support/faq)
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=tea-api/tea-api&type=Date)](https://star-history.com/#tea-api/tea-api&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Veloera/Veloera&type=Date)](https://star-history.com/#Veloera/Veloera&Date)
