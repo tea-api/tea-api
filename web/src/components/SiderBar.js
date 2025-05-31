@@ -92,6 +92,7 @@ const routerMap = {
   playground: '/playground',
   personal: '/personal',
   checkin: '/checkin',
+  channelMonitor: '/channel/monitor',
 };
 
 const SiderBar = () => {
@@ -122,6 +123,7 @@ const SiderBar = () => {
       'log',
       'midjourney',
       'setting',
+      'channelMonitor',
       'about',
       'chat',
       'detail',
@@ -228,6 +230,13 @@ const SiderBar = () => {
         itemKey: 'channel',
         to: '/channel',
         icon: <IconLayers />,
+        className: isAdmin() ? '' : 'tableHiddle',
+      },
+      {
+        text: t('线路监控'),
+        itemKey: 'channelMonitor',
+        to: '/channel/monitor',
+        icon: <IconHistogram />,
         className: isAdmin() ? '' : 'tableHiddle',
       },
       {

@@ -15,6 +15,19 @@ type ChannelStat struct {
 	CreatedAt int64 `json:"created_at" gorm:"autoCreateTime:milli"`
 }
 
+type ChannelStatDetail struct {
+    ChannelStat
+    Name string `json:"name"`
+}
+
+func GetChannelStatDetails() (stats []ChannelStatDetail, err error) {
+    err = DB.Table("channel_stats").
+        Select("channel_stats.*, channels.name").
+        Joins("left join channels on channels.id = channel_stats.channel_id").
+        Scan(&stats).Error
+    return
+}
+
 func UpdateChannelStat(tx *gorm.DB, channelID int, success bool) error {
 	if tx == nil {
 		tx = DB

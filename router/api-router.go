@@ -108,9 +108,10 @@ func SetApiRouter(router *gin.Engine) {
 			channelRoute.POST("/fix", controller.FixChannelsAbilities)
 			channelRoute.GET("/fetch_models/:id", controller.FetchUpstreamModels)
 			channelRoute.POST("/fetch_models", controller.FetchModels)
-			channelRoute.POST("/batch/tag", controller.BatchSetChannelTag)
-		}
-		tokenRoute := apiRouter.Group("/token")
+                channelRoute.POST("/batch/tag", controller.BatchSetChannelTag)
+                channelRoute.GET("/stats", controller.GetChannelStats)
+        }
+        tokenRoute := apiRouter.Group("/token")
 		tokenRoute.Use(middleware.UserAuth())
 		{
 			tokenRoute.GET("/", controller.GetAllTokens)
