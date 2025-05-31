@@ -2,7 +2,9 @@
   <strong><a href="./README.md">中文</a> | English</strong>
 </p>
 
-![tea-api](/web/public/logo.png)
+<a href="https://github.com/tea-api/tea-api" target="_blank">
+  <img src="/web/public/logo.png" alt="tea-api" width="100" height="100" />
+</a>
 
 # Tea-API
 
