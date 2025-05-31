@@ -3,10 +3,12 @@ package main
 import (
 	"embed"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"tea-api/common"
 	"tea-api/constant"
 	"tea-api/controller"
@@ -22,8 +24,76 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
+
 	_ "net/http/pprof"
 )
+
+func migrateOldSQLiteDB() {
+	if os.Getenv("SQL_DSN") != "" {
+		return
+	}
+	newPath := strings.SplitN(common.SQLitePath, "?", 2)[0]
+	if _, err := os.Stat(newPath); err == nil {
+		return
+	}
+	oldNames := []string{"veloera.db", "one-api.db", "new-api.db"}
+	for _, old := range oldNames {
+		if _, err := os.Stat(old); err == nil {
+			common.SysLog(fmt.Sprintf("detected %s, migrating to %s", old, newPath))
+			err = copyFile(old, newPath)
+			if err != nil {
+				common.SysError("failed to copy old db: " + err.Error())
+				return
+			}
+			db, err := gorm.Open(sqlite.Open(common.SQLitePath), &gorm.Config{})
+			if err != nil {
+				common.SysError("failed to open migrated db: " + err.Error())
+				_ = os.Remove(newPath)
+				return
+			}
+			sqlDB, err := db.DB()
+			if err == nil {
+				err = sqlDB.Ping()
+				sqlDB.Close()
+			}
+			if err != nil {
+				common.SysError("migrated db validation failed: " + err.Error())
+				_ = os.Remove(newPath)
+				return
+			}
+			err = os.Rename(old, old+".bak")
+			if err != nil {
+				common.SysError("failed to rename old db: " + err.Error())
+			} else {
+				common.SysLog(fmt.Sprintf("renamed %s to %s.bak", old, old))
+			}
+			return
+		}
+	}
+}
+
+func copyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := out.Close(); err == nil {
+			err = cerr
+		}
+	}()
+	if _, err = io.Copy(out, in); err != nil {
+		return err
+	}
+	return out.Sync()
+}
 
 //go:embed web/dist
 var buildFS embed.FS
@@ -40,6 +110,7 @@ func main() {
 	common.LoadEnv()
 
 	common.SetupLogger()
+	migrateOldSQLiteDB()
 	common.SysLog("Tea API " + common.Version + " started")
 	if os.Getenv("GIN_MODE") != "debug" {
 		gin.SetMode(gin.ReleaseMode)
