@@ -8,14 +8,15 @@ import (
 	"math"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"strings"
 	"tea-api/common"
 	"tea-api/constant"
 	"tea-api/dto"
 	relaycommon "tea-api/relay/common"
 	"tea-api/relay/helper"
 	"tea-api/service"
-	"os"
-	"strings"
+	"time"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
@@ -215,7 +216,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayI
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
-	
+
 	forceFormat := false
 	if forceFmt, ok := info.ChannelSetting[constant.ForceFormat].(bool); ok {
 		forceFormat = forceFmt
@@ -393,6 +394,23 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 	clientConn := info.ClientWs
 	targetConn := info.TargetWs
 
+	// 设置连接超时
+	clientConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	clientConn.SetWriteDeadline(time.Now().Add(30 * time.Second))
+	targetConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	targetConn.SetWriteDeadline(time.Now().Add(30 * time.Second))
+
+	// 设置自动延长超时的ping处理器
+	clientConn.SetPingHandler(func(data string) error {
+		clientConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return clientConn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(10*time.Second))
+	})
+
+	targetConn.SetPingHandler(func(data string) error {
+		targetConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return targetConn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(10*time.Second))
+	})
+
 	clientClosed := make(chan struct{})
 	targetClosed := make(chan struct{})
 	sendChan := make(chan []byte, 100)
@@ -403,6 +421,36 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 	localUsage := &dto.RealtimeUsage{}
 	sumUsage := &dto.RealtimeUsage{}
 
+	// 启动心跳发送器
+	gopool.Go(func() {
+		ticker := time.NewTicker(20 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				// 发送ping到客户端
+				err := clientConn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(10*time.Second))
+				if err != nil {
+					common.LogError(c, fmt.Sprintf("发送ping到客户端失败: %s", err.Error()))
+				}
+
+				// 发送ping到上游服务
+				err = targetConn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(10*time.Second))
+				if err != nil {
+					common.LogError(c, fmt.Sprintf("发送ping到上游服务失败: %s", err.Error()))
+				}
+			case <-clientClosed:
+				return
+			case <-targetClosed:
+				return
+			case <-c.Done():
+				return
+			}
+		}
+	})
+
+	// 从客户端读取消息并发送到上游服务
 	gopool.Go(func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -412,15 +460,25 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 		for {
 			select {
 			case <-c.Done():
+				close(clientClosed)
 				return
 			default:
-				_, message, err := clientConn.ReadMessage()
+				// 更新读取超时
+				clientConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+
+				messageType, message, err := clientConn.ReadMessage()
 				if err != nil {
 					if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 						errChan <- fmt.Errorf("error reading from client: %v", err)
 					}
+					common.LogInfo(c, fmt.Sprintf("客户端连接关闭: %s", err.Error()))
 					close(clientClosed)
 					return
+				}
+
+				// 记录消息
+				if common.DebugEnabled {
+					common.LogInfo(c, fmt.Sprintf("收到客户端消息: %s", string(message)))
 				}
 
 				realtimeEvent := &dto.RealtimeEvent{}
@@ -449,10 +507,17 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 				localUsage.InputTokenDetails.TextTokens += textToken
 				localUsage.InputTokenDetails.AudioTokens += audioToken
 
-				err = helper.WssString(c, targetConn, string(message))
+				// 更新写入超时
+				targetConn.SetWriteDeadline(time.Now().Add(30 * time.Second))
+
+				err = targetConn.WriteMessage(messageType, message)
 				if err != nil {
 					errChan <- fmt.Errorf("error writing to target: %v", err)
 					return
+				}
+
+				if common.DebugEnabled {
+					common.LogInfo(c, "消息成功发送到上游服务")
 				}
 
 				select {
@@ -463,6 +528,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 		}
 	})
 
+	// 从上游服务读取消息并发送到客户端
 	gopool.Go(func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -472,16 +538,27 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 		for {
 			select {
 			case <-c.Done():
+				close(targetClosed)
 				return
 			default:
-				_, message, err := targetConn.ReadMessage()
+				// 更新读取超时
+				targetConn.SetReadDeadline(time.Now().Add(60 * time.Second))
+
+				messageType, message, err := targetConn.ReadMessage()
 				if err != nil {
 					if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 						errChan <- fmt.Errorf("error reading from target: %v", err)
 					}
+					common.LogInfo(c, fmt.Sprintf("上游服务连接关闭: %s", err.Error()))
 					close(targetClosed)
 					return
 				}
+
+				// 记录收到的消息
+				if common.DebugEnabled {
+					common.LogInfo(c, fmt.Sprintf("收到上游服务消息: %s", string(message)))
+				}
+
 				info.SetFirstResponseTime()
 				realtimeEvent := &dto.RealtimeEvent{}
 				err = json.Unmarshal(message, realtimeEvent)
@@ -529,11 +606,7 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 						}
 						// 本次计费完成，清除
 						localUsage = &dto.RealtimeUsage{}
-						// print now usage
 					}
-					//common.LogInfo(c, fmt.Sprintf("realtime streaming sumUsage: %v", sumUsage))
-					//common.LogInfo(c, fmt.Sprintf("realtime streaming localUsage: %v", localUsage))
-					//common.LogInfo(c, fmt.Sprintf("realtime streaming localUsage: %v", localUsage))
 
 				} else if realtimeEvent.Type == dto.RealtimeEventTypeSessionUpdated || realtimeEvent.Type == dto.RealtimeEventTypeSessionCreated {
 					realtimeSession := realtimeEvent.Session
@@ -555,10 +628,17 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 					localUsage.OutputTokenDetails.AudioTokens += audioToken
 				}
 
-				err = helper.WssString(c, clientConn, string(message))
+				// 更新写入超时
+				clientConn.SetWriteDeadline(time.Now().Add(30 * time.Second))
+
+				err = clientConn.WriteMessage(messageType, message)
 				if err != nil {
 					errChan <- fmt.Errorf("error writing to client: %v", err)
 					return
+				}
+
+				if common.DebugEnabled {
+					common.LogInfo(c, "消息成功发送到客户端")
 				}
 
 				select {
@@ -571,22 +651,23 @@ func OpenaiRealtimeHandler(c *gin.Context, info *relaycommon.RelayInfo) (*dto.Op
 
 	select {
 	case <-clientClosed:
+		common.LogInfo(c, "客户端连接已关闭")
 	case <-targetClosed:
+		common.LogInfo(c, "上游服务连接已关闭")
 	case err := <-errChan:
-		//return service.OpenAIErrorWrapper(err, "realtime_error", http.StatusInternalServerError), nil
-		common.LogError(c, "realtime error: "+err.Error())
+		common.LogError(c, "Realtime错误: "+err.Error())
+		// 发送错误消息到客户端
+		errorObj := &dto.RealtimeEvent{
+			Type:    "error",
+			EventId: helper.GetLocalRealtimeID(c),
+			Error:   &dto.OpenAIError{Message: err.Error()},
+		}
+		if err := helper.WssObject(c, clientConn, errorObj); err != nil {
+			common.LogError(c, "发送错误消息到客户端失败: "+err.Error())
+		}
 	case <-c.Done():
+		common.LogInfo(c, "请求上下文已结束")
 	}
-
-	if usage.TotalTokens != 0 {
-		_ = preConsumeUsage(c, info, usage, sumUsage)
-	}
-
-	if localUsage.TotalTokens != 0 {
-		_ = preConsumeUsage(c, info, localUsage, sumUsage)
-	}
-
-	// check usage total tokens, if 0, use local usage
 
 	return nil, sumUsage
 }

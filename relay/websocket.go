@@ -1,10 +1,10 @@
 package relay
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
+	"io"
 	"net/http"
 	"tea-api/common"
 	"tea-api/dto"
@@ -12,21 +12,29 @@ import (
 	"tea-api/service"
 	"tea-api/setting"
 	"tea-api/setting/operation_setting"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	relayInfo := relaycommon.GenRelayInfoWs(c, ws)
 
-	// get & validate textRequest 获取并验证文本请求
-	//realtimeEvent, err := getAndValidateWssRequest(c, ws)
-	//if err != nil {
-	//	common.LogError(c, fmt.Sprintf("getAndValidateWssRequest failed: %s", err.Error()))
-	//	return service.OpenAIErrorWrapperLocal(err, "invalid_text_request", http.StatusBadRequest)
-	//}
+	// 添加请求和响应超时
+	ws.SetReadDeadline(time.Now().Add(60 * time.Second))
+	ws.SetWriteDeadline(time.Now().Add(30 * time.Second))
+
+	// 设置Ping处理
+	ws.SetPingHandler(func(appData string) error {
+		if common.DebugEnabled {
+			common.LogInfo(c, "收到Ping请求，发送Pong响应")
+		}
+		return ws.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(10*time.Second))
+	})
 
 	// map model name
 	modelMapping := c.GetString("model_mapping")
-	//isModelMapped := false
 	if modelMapping != "" && modelMapping != "{}" {
 		modelMap := make(map[string]string)
 		err := json.Unmarshal([]byte(modelMapping), &modelMap)
@@ -35,37 +43,18 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 		}
 		if modelMap[relayInfo.OriginModelName] != "" {
 			relayInfo.UpstreamModelName = modelMap[relayInfo.OriginModelName]
-			// set upstream model name
-			//isModelMapped = true
 		}
 	}
-	//relayInfo.UpstreamModelName = textRequest.Model
+
 	modelPrice, getModelPriceSuccess := operation_setting.GetModelPrice(relayInfo.UpstreamModelName, false)
 	groupRatio := setting.GetGroupRatio(relayInfo.Group)
 
 	var preConsumedQuota int
 	var ratio float64
 	var modelRatio float64
-	//err := service.SensitiveWordsCheck(textRequest)
 
-	//if constant.ShouldCheckPromptSensitive() {
-	//	err = checkRequestSensitive(textRequest, relayInfo)
-	//	if err != nil {
-	//		return service.OpenAIErrorWrapperLocal(err, "sensitive_words_detected", http.StatusBadRequest)
-	//	}
-	//}
-
-	//promptTokens, err := getWssPromptTokens(realtimeEvent, relayInfo)
-	//// count messages token error 计算promptTokens错误
-	//if err != nil {
-	//	return service.OpenAIErrorWrapper(err, "count_token_messages_failed", http.StatusInternalServerError)
-	//}
-	//
 	if !getModelPriceSuccess {
 		preConsumedTokens := common.PreConsumedQuota
-		//if realtimeEvent.Session.MaxResponseOutputTokens != 0 {
-		//	preConsumedTokens = promptTokens + int(realtimeEvent.Session.MaxResponseOutputTokens)
-		//}
 		modelRatio, _ = operation_setting.GetModelRatio(relayInfo.UpstreamModelName)
 		ratio = modelRatio * groupRatio
 		preConsumedQuota = int(float64(preConsumedTokens) * ratio)
@@ -90,28 +79,51 @@ func WssHelper(c *gin.Context, ws *websocket.Conn) (openaiErr *dto.OpenAIErrorWi
 	if adaptor == nil {
 		return service.OpenAIErrorWrapperLocal(fmt.Errorf("invalid api type: %d", relayInfo.ApiType), "invalid_api_type", http.StatusBadRequest)
 	}
+
 	adaptor.Init(relayInfo)
-	//var requestBody io.Reader
-	//firstWssRequest, _ := c.Get("first_wss_request")
-	//requestBody = bytes.NewBuffer(firstWssRequest.([]byte))
+
+	// 获取请求体以便发送到上游服务
+	requestBody, err := common.GetRequestBody(c)
+	if err != nil {
+		common.LogError(c, fmt.Sprintf("获取请求体失败: %s", err.Error()))
+		return service.OpenAIErrorWrapperLocal(err, "get_request_body_failed", http.StatusInternalServerError)
+	}
+
+	// 将请求体保存到请求上下文，以便DoWssRequest可以使用
+	c.Set("first_wss_request", requestBody)
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 
 	statusCodeMappingStr := c.GetString("status_code_mapping")
-	resp, err := adaptor.DoRequest(c, relayInfo, nil)
+	resp, err := adaptor.DoRequest(c, relayInfo, bytes.NewBuffer(requestBody))
 	if err != nil {
+		common.LogError(c, fmt.Sprintf("执行WebSocket请求失败: %s", err.Error()))
 		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
 	}
 
 	if resp != nil {
 		relayInfo.TargetWs = resp.(*websocket.Conn)
+		// 确保在函数返回时关闭连接
 		defer relayInfo.TargetWs.Close()
+
+		// 设置上游连接超时
+		relayInfo.TargetWs.SetReadDeadline(time.Now().Add(60 * time.Second))
+		relayInfo.TargetWs.SetWriteDeadline(time.Now().Add(30 * time.Second))
+
+		common.LogInfo(c, "成功建立与上游服务的WebSocket连接")
+	} else {
+		common.LogError(c, "无法获取上游WebSocket连接")
+		return service.OpenAIErrorWrapperLocal(fmt.Errorf("target websocket connection is nil"), "websocket_connection_failed", http.StatusInternalServerError)
 	}
 
 	usage, openaiErr := adaptor.DoResponse(c, nil, relayInfo)
 	if openaiErr != nil {
+		common.LogError(c, fmt.Sprintf("处理WebSocket响应失败: %s", openaiErr.Error.Message))
 		// reset status code 重置状态码
 		service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 		return openaiErr
 	}
+
+	common.LogInfo(c, "WebSocket请求处理完成")
 	service.PostWssConsumeQuota(c, relayInfo, relayInfo.UpstreamModelName, usage.(*dto.RealtimeUsage), preConsumedQuota,
 		userQuota, modelRatio, groupRatio, modelPrice, getModelPriceSuccess, "")
 	return nil

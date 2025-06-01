@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	common2 "tea-api/common"
 	"tea-api/relay/common"
 	"tea-api/relay/constant"
 	"tea-api/relay/helper"
 	"tea-api/service"
 	"tea-api/setting/operation_setting"
-	"sync"
 	"time"
 
 	"github.com/bytedance/gopkg/util/gopool"
@@ -88,6 +88,9 @@ func DoWssRequest(a Adaptor, c *gin.Context, info *common.RelayInfo, requestBody
 	if err != nil {
 		return nil, fmt.Errorf("get request url failed: %w", err)
 	}
+	if common2.DebugEnabled {
+		println("fullRequestURL:", fullRequestURL)
+	}
 	targetHeader := http.Header{}
 	err = a.SetupRequestHeader(c, &targetHeader, info)
 	if err != nil {
@@ -98,9 +101,30 @@ func DoWssRequest(a Adaptor, c *gin.Context, info *common.RelayInfo, requestBody
 	if err != nil {
 		return nil, fmt.Errorf("dial failed to %s: %w", fullRequestURL, err)
 	}
-	// send request body
-	//all, err := io.ReadAll(requestBody)
-	//err = service.WssString(c, targetConn, string(all))
+
+	// 发送初始请求体
+	if requestBody != nil {
+		all, err := io.ReadAll(requestBody)
+		if err != nil {
+			targetConn.Close()
+			return nil, fmt.Errorf("read request body failed: %w", err)
+		}
+		// 记录初始请求数据
+		if common2.DebugEnabled {
+			common2.LogInfo(c, fmt.Sprintf("sending initial WebSocket message: %s", string(all)))
+		}
+
+		err = helper.WssString(c, targetConn, string(all))
+		if err != nil {
+			targetConn.Close()
+			return nil, fmt.Errorf("send initial message failed: %w", err)
+		}
+
+		if common2.DebugEnabled {
+			common2.LogInfo(c, "initial WebSocket message sent successfully")
+		}
+	}
+
 	return targetConn, nil
 }
 

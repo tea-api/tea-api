@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"tea-api/common"
 	constant2 "tea-api/constant"
 	"tea-api/dto"
@@ -17,7 +18,6 @@ import (
 	relayconstant "tea-api/relay/constant"
 	"tea-api/relay/helper"
 	"tea-api/service"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -225,8 +225,17 @@ func relayRequest(c *gin.Context, relayMode int, channel *model.Channel) *dto.Op
 
 func wssRequest(c *gin.Context, ws *websocket.Conn, relayMode int, channel *model.Channel) *dto.OpenAIErrorWithStatusCode {
 	addUsedChannel(c, channel.Id)
-	requestBody, _ := common.GetRequestBody(c)
+	requestBody, err := common.GetRequestBody(c)
+	if err != nil {
+		common.LogError(c, fmt.Sprintf("获取请求体失败: %s", err.Error()))
+		return service.OpenAIErrorWrapperLocal(err, "get_request_body_failed", http.StatusInternalServerError)
+	}
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+
+	// 保存请求体到上下文中，以便可以在处理过程中多次使用
+	c.Set("wss_request_body", requestBody)
+
+	common.LogInfo(c, fmt.Sprintf("准备处理WebSocket请求，渠道ID: %d, 类型: %d", channel.Id, channel.Type))
 	return relay.WssHelper(c, ws)
 }
 
