@@ -141,9 +141,17 @@ func InitDB() (err error) {
 		if err != nil {
 			return err
 		}
-		sqlDB.SetMaxIdleConns(common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 100))
-		sqlDB.SetMaxOpenConns(common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 1000))
-		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_LIFETIME", 60)))
+		// 优化数据库连接池配置以降低首字时延
+		maxIdleConns := common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 50)  // 减少空闲连接数
+		maxOpenConns := common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 200) // 减少最大连接数，避免资源竞争
+		maxLifetime := common.GetEnvOrDefault("SQL_MAX_LIFETIME", 300)    // 增加连接生命周期
+
+		sqlDB.SetMaxIdleConns(maxIdleConns)
+		sqlDB.SetMaxOpenConns(maxOpenConns)
+		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(maxLifetime))
+
+		// 设置连接空闲超时，快速释放不活跃连接
+		sqlDB.SetConnMaxIdleTime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_IDLE_TIME", 60)))
 
 		if !common.IsMasterNode {
 			return nil

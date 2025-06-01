@@ -32,7 +32,14 @@ func InitRedisClient() (err error) {
 	if err != nil {
 		FatalLog("failed to parse Redis connection string: " + err.Error())
 	}
-	opt.PoolSize = GetEnvOrDefault("REDIS_POOL_SIZE", 10)
+	// 优化Redis连接池配置以降低首字时延
+	opt.PoolSize = GetEnvOrDefault("REDIS_POOL_SIZE", 20)                    // 增加连接池大小
+	opt.MinIdleConns = GetEnvOrDefault("REDIS_MIN_IDLE_CONNS", 5)            // 设置最小空闲连接
+	opt.MaxConnAge = time.Duration(GetEnvOrDefault("REDIS_MAX_CONN_AGE", 300)) * time.Second // 连接最大生命周期
+	opt.PoolTimeout = time.Duration(GetEnvOrDefault("REDIS_POOL_TIMEOUT", 4)) * time.Second  // 连接池超时
+	opt.IdleTimeout = time.Duration(GetEnvOrDefault("REDIS_IDLE_TIMEOUT", 300)) * time.Second // 空闲连接超时
+	opt.IdleCheckFrequency = time.Duration(GetEnvOrDefault("REDIS_IDLE_CHECK_FREQ", 60)) * time.Second // 空闲检查频率
+
 	RDB = redis.NewClient(opt)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

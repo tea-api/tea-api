@@ -19,9 +19,14 @@ import (
 )
 
 const (
-	InitialScannerBufferSize = 1 << 20  // 1MB (1*1024*1024)
-	MaxScannerBufferSize     = 10 << 20 // 10MB (10*1024*1024)
+	// 优化缓冲区大小以降低首字时延
+	InitialScannerBufferSize = 4 << 10   // 4KB (4*1024) - 减小初始缓冲区
+	MaxScannerBufferSize     = 1 << 20   // 1MB (1*1024*1024) - 减小最大缓冲区
 	DefaultPingInterval      = 10 * time.Second
+
+	// 首字响应优化相关常量
+	FirstTokenBufferSize     = 1 << 10   // 1KB - 首字响应专用小缓冲区
+	StreamFlushInterval      = 50 * time.Millisecond // 流式响应刷新间隔
 )
 
 func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo, dataHandler func(data string) bool) {
@@ -64,9 +69,16 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 		}
 		close(stopChan)
 	}()
-	scanner.Buffer(make([]byte, InitialScannerBufferSize), MaxScannerBufferSize)
+
+	// 优化缓冲区配置以降低首字时延
+	// 使用较小的初始缓冲区，首字响应后再扩展
+	scanner.Buffer(make([]byte, FirstTokenBufferSize), MaxScannerBufferSize)
 	scanner.Split(bufio.ScanLines)
 	SetEventStreamHeaders(c)
+
+	// 首字响应标志
+	var firstTokenSent bool
+	var bufferExpanded bool
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -118,10 +130,29 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 			data = strings.TrimLeft(data, " ")
 			data = strings.TrimSuffix(data, "\r")
 			if !strings.HasPrefix(data, "[DONE]") {
-				info.SetFirstResponseTime()
+				// 首字响应优化：记录首字时间并扩展缓冲区
+				if !firstTokenSent {
+					info.SetFirstResponseTime()
+					firstTokenSent = true
+
+					// 首字响应后扩展缓冲区以提高后续处理效率
+					if !bufferExpanded {
+						scanner.Buffer(make([]byte, InitialScannerBufferSize), MaxScannerBufferSize)
+						bufferExpanded = true
+					}
+				}
+
 				writeMutex.Lock() // Lock before writing
 				success := dataHandler(data)
 				writeMutex.Unlock() // Unlock after writing
+
+				// 首字响应后立即刷新，减少延迟
+				if firstTokenSent {
+					if flusher, ok := c.Writer.(http.Flusher); ok {
+						flusher.Flush()
+					}
+				}
+
 				if !success {
 					break
 				}

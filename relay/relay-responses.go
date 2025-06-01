@@ -47,6 +47,17 @@ func getInputTokens(req *dto.OpenAIResponsesRequest, info *relaycommon.RelayInfo
 }
 
 func ResponsesHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
+	// 开始延迟监控
+	requestID := c.GetString(common.RequestIdKey)
+	common.StartLatencyTracking(requestID)
+
+	// 延迟监控：记录请求完成时间并清理
+	defer func() {
+		if metrics := common.RecordRequestComplete(requestID); metrics != nil {
+			common.LogLatencyMetrics(requestID, metrics)
+		}
+	}()
+
 	req, err := getAndValidateResponsesRequest(c)
 	if err != nil {
 		common.LogError(c, fmt.Sprintf("getAndValidateResponsesRequest error: %s", err.Error()))
@@ -135,6 +146,9 @@ func ResponsesHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) 
 		}
 		requestBody = bytes.NewBuffer(jsonData)
 	}
+
+	// 延迟监控：记录上游连接开始
+	common.RecordUpstreamConnect(requestID)
 
 	var httpResp *http.Response
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)

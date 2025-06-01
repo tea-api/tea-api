@@ -65,6 +65,7 @@ type RelayInfo struct {
 	StartTime         time.Time
 	FirstResponseTime time.Time
 	isFirstResponse   bool
+	RequestID         string // 添加RequestID字段用于延迟监控
 	//SendLastReasoningResponse bool
 	ApiType           int
 	IsStream          bool
@@ -207,6 +208,7 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		TokenUnlimited:    tokenUnlimited,
 		StartTime:         startTime,
 		FirstResponseTime: startTime.Add(-time.Second),
+		RequestID:         c.GetString(common.RequestIdKey), // 设置RequestID
 		OriginModelName:   c.GetString("original_model"),
 		UpstreamModelName: c.GetString("original_model"),
 		//RecodeModelName:   c.GetString("original_model"),
@@ -260,6 +262,11 @@ func (info *RelayInfo) SetFirstResponseTime() {
 	if info.isFirstResponse {
 		info.FirstResponseTime = time.Now()
 		info.isFirstResponse = false
+
+		// 集成延迟监控：记录首字响应时间
+		if info.RequestID != "" {
+			common.RecordFirstToken(info.RequestID)
+		}
 	}
 }
 
