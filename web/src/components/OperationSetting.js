@@ -74,9 +74,15 @@ const OperationSetting = () => {
     try {
       const res = await API.get('/api/option/');
       const { success, message, data } = res.data;
-      if (success && data) {
+      if (success && data && Array.isArray(data)) {
         let newInputs = {};
         data.forEach((item) => {
+          // 确保 item 存在且有 key 和 value 属性
+          if (!item || typeof item.key !== 'string') {
+            console.warn('Invalid option item:', item);
+            return;
+          }
+
           if (
             item.key === 'ModelRatio' ||
             item.key === 'GroupRatio' ||
@@ -92,17 +98,17 @@ const OperationSetting = () => {
               item.value = item.value || '';
             }
           }
-                  if (item.key === 'SpecialRewardDays' || item.key === 'SpecialRewards') {
-          try {
-            item.value = JSON.parse(item.value);
-            if (!Array.isArray(item.value)) {
+          if (item.key === 'SpecialRewardDays' || item.key === 'SpecialRewards') {
+            try {
+              item.value = JSON.parse(item.value);
+              if (!Array.isArray(item.value)) {
+                item.value = [];
+              }
+            } catch (error) {
+              console.error('failed to parse option', item.key, error);
               item.value = [];
             }
-          } catch (error) {
-            console.error('failed to parse option', item.key, error);
-            item.value = [];
           }
-        }
           if (
             item.key.endsWith('Enabled') ||
             ['DefaultCollapseSidebar'].includes(item.key)
@@ -113,9 +119,11 @@ const OperationSetting = () => {
           }
         });
 
-        setInputs(newInputs);
+        // 确保 newInputs 不为空，合并默认值
+        setInputs(prevInputs => ({ ...prevInputs, ...newInputs }));
       } else {
         showError(message || '获取配置失败');
+        console.error('API response invalid:', { success, message, data });
       }
     } catch (error) {
       console.error('获取配置失败:', error);

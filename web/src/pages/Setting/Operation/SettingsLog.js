@@ -80,6 +80,12 @@ export default function SettingsLog(props) {
   }
 
   useEffect(() => {
+    // 确保 props.options 存在且为对象
+    if (!props.options || typeof props.options !== 'object') {
+      console.warn('props.options is invalid:', props.options);
+      return;
+    }
+
     const currentInputs = {};
     for (let key in props.options) {
       if (Object.keys(inputs).includes(key)) {
@@ -87,7 +93,10 @@ export default function SettingsLog(props) {
       }
     }
     currentInputs['historyTimestamp'] = inputs.historyTimestamp;
-    setInputs(Object.assign(inputs, currentInputs));
+
+    // 确保 currentInputs 不为空，合并默认值
+    const mergedInputs = { ...inputs, ...currentInputs };
+    setInputs(mergedInputs);
     setInputsRow(structuredClone(currentInputs));
     if (refForm.current) refForm.current.setValues(currentInputs);
   }, [props.options]);

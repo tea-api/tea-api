@@ -63,6 +63,12 @@ export default function ModelRatioNotSetEditor(props) {
   }, []);
 
   useEffect(() => {
+    // 确保 props.options 存在且为对象
+    if (!props.options || typeof props.options !== 'object') {
+      console.warn('props.options is invalid:', props.options);
+      return;
+    }
+
     try {
       const modelPrice = JSON.parse(props.options.ModelPrice || '{}');
       const modelRatio = JSON.parse(props.options.ModelRatio || '{}');
@@ -128,6 +134,13 @@ export default function ModelRatioNotSetEditor(props) {
       CompletionRatio: {},
     };
     try {
+      // 确保 props.options 存在
+      if (!props.options || typeof props.options !== 'object') {
+        console.warn('props.options is invalid in SubmitData:', props.options);
+        setLoading(false);
+        return;
+      }
+
       output.ModelPrice = JSON.parse(props.options.ModelPrice || '{}');
       output.ModelRatio = JSON.parse(props.options.ModelRatio || '{}');
       output.CompletionRatio = JSON.parse(

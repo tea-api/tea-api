@@ -96,6 +96,12 @@ export default function SettingsChats(props) {
   }
 
   useEffect(() => {
+    // 确保 props.options 存在且为对象
+    if (!props.options || typeof props.options !== 'object') {
+      console.warn('props.options is invalid:', props.options);
+      return;
+    }
+
     const currentInputs = {};
     for (let key in props.options) {
       if (Object.keys(inputs).includes(key)) {
@@ -112,9 +118,11 @@ export default function SettingsChats(props) {
         }
       }
     }
-    setInputs(currentInputs);
-    setInputsRow(structuredClone(currentInputs));
-    if (refForm.current) refForm.current.setValues(currentInputs);
+
+    // 确保 currentInputs 不为空，合并默认值
+    setInputs(prevInputs => ({ ...prevInputs, ...currentInputs }));
+    setInputsRow(structuredClone({ ...inputs, ...currentInputs }));
+    if (refForm.current) refForm.current.setValues({ ...inputs, ...currentInputs });
   }, [props.options]);
 
   return (

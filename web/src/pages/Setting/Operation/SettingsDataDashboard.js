@@ -62,18 +62,27 @@ export default function DataDashboard(props) {
   }
 
   useEffect(() => {
+    // 确保 props.options 存在且为对象
+    if (!props.options || typeof props.options !== 'object') {
+      console.warn('props.options is invalid:', props.options);
+      return;
+    }
+
     const currentInputs = {};
     for (let key in props.options) {
       if (Object.keys(inputs).includes(key)) {
         currentInputs[key] = props.options[key];
       }
     }
-    setInputs(currentInputs);
-    setInputsRow(structuredClone(currentInputs));
-    if (refForm.current) refForm.current.setValues(currentInputs);
+
+    // 确保 currentInputs 不为空，合并默认值
+    const mergedInputs = { ...inputs, ...currentInputs };
+    setInputs(prevInputs => ({ ...prevInputs, ...currentInputs }));
+    setInputsRow(structuredClone(mergedInputs));
+    if (refForm.current) refForm.current.setValues(mergedInputs);
     localStorage.setItem(
       'data_export_default_time',
-      String(inputs.DataExportDefaultTime),
+      String(mergedInputs.DataExportDefaultTime || 'hour'),
     );
   }, [props.options]);
 
