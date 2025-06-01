@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"sync"
@@ -127,7 +128,7 @@ func performStandardAuth(c *gin.Context, key string) error {
 
 	userEnabled := userCache.Status == common.UserStatusEnabled
 	if !userEnabled {
-		return common.NewError("用户已被封禁")
+		return errors.New("用户已被封禁")
 	}
 
 	// 创建缓存条目
@@ -137,7 +138,7 @@ func performStandardAuth(c *gin.Context, key string) error {
 		TokenKey:       token.Key,
 		TokenName:      token.Name,
 		UnlimitedQuota: token.UnlimitedQuota,
-		RemainQuota:    token.RemainQuota,
+		RemainQuota:    int64(token.RemainQuota),
 		UserEnabled:    userEnabled,
 		ExpiresAt:      time.Now().Add(5 * time.Minute), // 5分钟缓存
 	}
