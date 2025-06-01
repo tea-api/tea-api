@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -69,8 +70,11 @@ func CheckSetup() {
 			err := DB.Create(&newSetup).Error
 			if err != nil {
 				common.SysLog("failed to create setup record: " + err.Error())
+				constant.Setup = false
+			} else {
+				common.SysLog("setup record created successfully")
+				constant.Setup = true
 			}
-			constant.Setup = true
 		} else {
 			common.SysLog("system is not initialized and no root user exists")
 			constant.Setup = false
@@ -78,8 +82,12 @@ func CheckSetup() {
 	} else {
 		// Setup record exists, system is initialized
 		common.SysLog("system is already initialized at: " + time.Unix(setup.InitializedAt, 0).String())
+		common.SysLog("setting constant.Setup to true")
 		constant.Setup = true
 	}
+
+	// 添加调试日志确认状态
+	common.SysLog(fmt.Sprintf("CheckSetup completed: constant.Setup = %v", constant.Setup))
 }
 
 func chooseDB(envName string) (*gorm.DB, error) {

@@ -37,6 +37,7 @@ func GetStatus(c *gin.Context) {
 
 	// 添加调试日志
 	common.SysLog("GetStatus: LinuxDOClientId = " + common.LinuxDOClientId)
+	common.SysLog(fmt.Sprintf("GetStatus: constant.Setup = %v", constant.Setup))
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
