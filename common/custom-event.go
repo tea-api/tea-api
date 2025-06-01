@@ -60,16 +60,39 @@ func encode(writer io.Writer, event CustomEvent) error {
 }
 
 func writeData(w stringWriter, data interface{}) error {
-	dataReplacer.WriteString(w, fmt.Sprint(data))
-	if strings.HasPrefix(data.(string), "data") {
+	dataStr := fmt.Sprint(data)
+	dataReplacer.WriteString(w, dataStr)
+
+	// 确保每个事件后面都有两个换行符
+	if strings.HasPrefix(dataStr, "data") {
+		// 如果数据行已经结尾有两个换行符，不再添加
+		if !strings.HasSuffix(dataStr, "\n\n") {
+			// 如果只有一个换行符，则再添加一个
+			if strings.HasSuffix(dataStr, "\n") {
+				w.writeString("\n")
+			} else {
+				// 如果没有换行符，添加两个
+				w.writeString("\n\n")
+			}
+		}
+	} else {
+		// 普通数据行添加两个换行
 		w.writeString("\n\n")
 	}
+
 	return nil
 }
 
 func (r CustomEvent) Render(w http.ResponseWriter) error {
 	r.WriteContentType(w)
-	return encode(w, r)
+	err := encode(w, r)
+
+	// 尝试立即刷新数据
+	if flusher, ok := w.(http.Flusher); ok {
+		flusher.Flush()
+	}
+
+	return err
 }
 
 func (r CustomEvent) WriteContentType(w http.ResponseWriter) {

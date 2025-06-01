@@ -147,6 +147,15 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 	if info.IsStream {
 		helper.SetEventStreamHeaders(c)
 
+		// 确保客户端不会主动断开连接
+		c.Writer.Header().Set("Keep-Alive", "timeout=600")
+		c.Writer.Header().Set("Connection", "keep-alive")
+
+		// 确保刷新首个响应头，让客户端知道连接已建立
+		if flusher, ok := c.Writer.(http.Flusher); ok {
+			flusher.Flush()
+		}
+
 		if pingEnabled {
 			pingInterval := time.Duration(generalSettings.PingIntervalSeconds) * time.Second
 			var pingerCtx context.Context
@@ -174,7 +183,7 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 						err2 := helper.PingData(c)
 						pingMutex.Unlock()
 						if err2 != nil {
-							common2.LogError(c, "SSE ping error: "+err.Error())
+							common2.LogError(c, "SSE ping error: "+err2.Error())
 							return
 						}
 						if common2.DebugEnabled {
@@ -191,7 +200,10 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 		}
 	}
 
+	// 设置更长的超时时间
+	client.Timeout = time.Second * 120
 	resp, err := client.Do(req)
+
 	// request结束后等待 ping goroutine 完成
 	if info.IsStream && pingEnabled {
 		pingerWg.Wait()
