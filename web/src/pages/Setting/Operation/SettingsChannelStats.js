@@ -13,7 +13,8 @@ export default function SettingsChannelStats() {
     try {
       const res = await API.get('/api/channel/stats');
       if (res.data.success) {
-        setStats(res.data.data);
+        const data = Array.isArray(res.data.data) ? res.data.data : [];
+        setStats(data);
       } else {
         showError(t(res.data.message));
       }
