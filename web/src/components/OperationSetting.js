@@ -7,6 +7,7 @@ import SettingsLog from '../pages/Setting/Operation/SettingsLog.js';
 import SettingsDataDashboard from '../pages/Setting/Operation/SettingsDataDashboard.js';
 import SettingsMonitoring from '../pages/Setting/Operation/SettingsMonitoring.js';
 import SettingsCreditLimit from '../pages/Setting/Operation/SettingsCreditLimit.js';
+import LinuxDOTrustLevelSettings from '../pages/Setting/Operation/LinuxDOTrustLevelSettings.js';
 import ModelSettingsVisualEditor from '../pages/Setting/Operation/ModelSettingsVisualEditor.js';
 import GroupRatioSettings from '../pages/Setting/Operation/GroupRatioSettings.js';
 import ModelRatioSettings from '../pages/Setting/Operation/ModelRatioSettings.js';
@@ -175,6 +176,10 @@ const OperationSetting = () => {
         {/* 额度设置 */}
         <Card style={{ marginTop: '10px' }}>
           <SettingsCreditLimit options={inputs} refresh={onRefresh} />
+        </Card>
+        {/* L站信任等级额度设置 */}
+        <Card style={{ marginTop: '10px' }}>
+          <LinuxDOTrustLevelSettings options={inputs} refresh={onRefresh} />
         </Card>
         {/* 聊天设置 */}
         <Card style={{ marginTop: '10px' }}>
