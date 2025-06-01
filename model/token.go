@@ -55,11 +55,20 @@ func (token *Token) GetIpLimitsMap() map[string]any {
 	return ipLimitsMap
 }
 
-func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, error) {
+func GetAllUserTokens(userId int, startIdx int, num int) ([]*Token, int64, error) {
 	var tokens []*Token
+	var total int64
 	var err error
+
+	// 获取总数
+	err = DB.Model(&Token{}).Where("user_id = ?", userId).Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 获取分页数据
 	err = DB.Where("user_id = ?", userId).Order("id desc").Limit(num).Offset(startIdx).Find(&tokens).Error
-	return tokens, err
+	return tokens, total, err
 }
 
 func SearchUserTokens(userId int, keyword string, token string) (tokens []*Token, err error) {

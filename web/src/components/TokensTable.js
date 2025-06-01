@@ -329,14 +329,19 @@ const TokensTable = () => {
   );
   const loadTokens = async (startIdx) => {
     setLoading(true);
-    const res = await API.get(`/api/token/?p=${startIdx}&size=${pageSize}`);
+    const res = await API.get(`/api/token/?p=${startIdx + 1}&page_size=${pageSize}`);
     const { success, message, data } = res.data;
     if (success) {
+      // 适应新的API响应格式
+      const tokenData = data.items || data; // 兼容新旧格式
+      const total = data.total || tokenData.length;
+
       if (startIdx === 0) {
-        setTokensFormat(data);
+        setTokensFormat(tokenData);
+        setTokenCount(total);
       } else {
         let newTokens = [...tokens];
-        newTokens.splice(startIdx * pageSize, data.length, ...data);
+        newTokens.splice(startIdx * pageSize, tokenData.length, ...tokenData);
         setTokensFormat(newTokens);
       }
     } else {

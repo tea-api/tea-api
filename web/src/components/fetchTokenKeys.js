@@ -4,10 +4,12 @@ import { API, showError } from '../helpers';
 
 async function fetchTokenKeys() {
   try {
-    const response = await API.get('/api/token/?p=0&size=100');
+    const response = await API.get('/api/token/?p=1&page_size=100');
     const { success, data } = response.data;
     if (success) {
-      const activeTokens = data.filter((token) => token.status === 1);
+      // 适应新的API响应格式
+      const tokenData = data.items || data; // 兼容新旧格式
+      const activeTokens = tokenData.filter((token) => token.status === 1);
       return activeTokens.map((token) => token.key);
     } else {
       throw new Error('Failed to fetch token keys');
