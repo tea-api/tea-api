@@ -12,7 +12,7 @@ cd "$REPO_ROOT/web"
 if [ ! -d node_modules ]; then
   npm install
 fi
-REACT_APP_VERSION=$(cat "$REPO_ROOT/VERSION") npm run build
+DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat "$REPO_ROOT/VERSION") npm run build
 cd "$REPO_ROOT"
 
 # Determine architecture

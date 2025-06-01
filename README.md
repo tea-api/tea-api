@@ -49,6 +49,19 @@ API公益站系统
 > [!TIP]
 > 最新版 Docker 镜像：`ghcr.io/teapi/tea-api:latest`
 
+### 快速部署 (Linux)
+
+对于 Linux (Debian/Ubuntu) 系统，我们提供了一键部署脚本：
+
+```bash
+# 克隆项目
+git clone https://github.com/tea-api/tea-api.git
+cd tea-api
+
+# 一键部署（自动安装依赖、构建、配置、启动）
+./deploy_linux.sh
+```
+
 ### docker-compose
 
 1. 克隆此仓库
@@ -75,6 +88,69 @@ docker-compose up -d --build
 ```shell
 docker build -t teapi/tea-api:latest .
 ```
+
+### 手动部署
+
+#### Linux 系统
+
+1. 设置环境：
+```bash
+./bin/setup_env_linux.sh
+```
+
+2. 构建应用：
+```bash
+./bin/build_linux.sh
+```
+
+3. 配置并启动：
+```bash
+cd tea-api-linux-deploy
+cp .env.example .env
+# 编辑 .env 文件配置数据库等
+./start.sh
+```
+
+#### macOS 系统
+
+1. 设置环境：
+```bash
+./bin/setup_env_mac.sh
+```
+
+2. 构建应用：
+```bash
+./bin/build_mac.sh
+```
+
+3. 运行：
+```bash
+./tea-api-macos --port 3000 --log-dir ./logs
+```
+
+#### 使用 Makefile
+
+```bash
+# 设置 Linux 环境
+make setup-linux
+
+# 构建 Linux 版本
+make build-linux
+
+# 设置 macOS 环境
+make setup-mac
+
+# 构建 macOS 版本
+make build-mac
+
+# 快速 Linux 部署
+make deploy-linux
+
+# 清理构建文件
+make clean
+```
+
+更多部署信息请参考 [Linux 部署指南](docs/installation/linux-debian.md)。
 
 ## 环境变量
 
