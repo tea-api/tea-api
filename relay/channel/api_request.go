@@ -128,7 +128,6 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 			var pingerCtx context.Context
 			pingerCtx, stopPinger = context.WithCancel(c.Request.Context())
 			// 退出时清理 pingerCtx 防止泄露
-			defer stopPinger()
 			pingerWg.Add(1)
 			gopool.Go(func() {
 				defer pingerWg.Done()
@@ -168,8 +167,11 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 	}
 
 	resp, err := client.Do(req)
-	// request结束后等待 ping goroutine 完成
+	// 停止 ping goroutine 并等待其完成
 	if info.IsStream && pingEnabled {
+		if stopPinger != nil {
+			stopPinger()
+		}
 		pingerWg.Wait()
 	}
 	if err != nil {
