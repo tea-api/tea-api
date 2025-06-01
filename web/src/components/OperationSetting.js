@@ -98,7 +98,10 @@ const OperationSetting = () => {
               item.value = item.value || '';
             }
           }
-          if (item.key === 'SpecialRewardDays' || item.key === 'SpecialRewards') {
+          if (
+            item.key === 'SpecialRewardDays' ||
+            item.key === 'SpecialRewards'
+          ) {
             try {
               item.value = JSON.parse(item.value);
               if (!Array.isArray(item.value)) {
@@ -119,8 +122,7 @@ const OperationSetting = () => {
           }
         });
 
-        // 确保 newInputs 不为空，合并默认值
-        setInputs(prevInputs => ({ ...prevInputs, ...newInputs }));
+        setInputs(newInputs);
       } else {
         showError(message || '获取配置失败');
         console.error('API response invalid:', { success, message, data });
