@@ -97,5 +97,5 @@ func RecordExist(err error) (bool, error) {
 }
 
 func shouldUpdateRedis(fromDB bool, err error) bool {
-	return common.RedisEnabled && fromDB && err == nil
+	return (common.RedisEnabled || common.TokenMemoryCacheEnabled) && fromDB && err == nil
 }

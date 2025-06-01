@@ -8,6 +8,12 @@ import (
 )
 
 func cacheSetToken(token Token) error {
+	// always update memory cache first
+	memoryCacheSetToken(token)
+
+	if !common.RedisEnabled {
+		return nil
+	}
 	key := common.GenerateHMAC(token.Key)
 	token.Clean()
 	err := common.RedisHSetObj(fmt.Sprintf("token:%s", key), &token, time.Duration(constant.TokenCacheSeconds)*time.Second)
@@ -18,6 +24,10 @@ func cacheSetToken(token Token) error {
 }
 
 func cacheDeleteToken(key string) error {
+	memoryCacheDeleteToken(key)
+	if !common.RedisEnabled {
+		return nil
+	}
 	key = common.GenerateHMAC(key)
 	err := common.RedisHDelObj(fmt.Sprintf("token:%s", key))
 	if err != nil {
@@ -27,6 +37,10 @@ func cacheDeleteToken(key string) error {
 }
 
 func cacheIncrTokenQuota(key string, increment int64) error {
+	memoryCacheIncrTokenQuota(key, increment)
+	if !common.RedisEnabled {
+		return nil
+	}
 	key = common.GenerateHMAC(key)
 	err := common.RedisHIncrBy(fmt.Sprintf("token:%s", key), constant.TokenFiledRemainQuota, increment)
 	if err != nil {
@@ -40,6 +54,10 @@ func cacheDecrTokenQuota(key string, decrement int64) error {
 }
 
 func cacheSetTokenField(key string, field string, value string) error {
+	memoryCacheSetTokenField(key, field, value)
+	if !common.RedisEnabled {
+		return nil
+	}
 	key = common.GenerateHMAC(key)
 	err := common.RedisHSetField(fmt.Sprintf("token:%s", key), field, value)
 	if err != nil {
@@ -50,15 +68,23 @@ func cacheSetTokenField(key string, field string, value string) error {
 
 // CacheGetTokenByKey 从缓存中获取 token，如果缓存中不存在，则从数据库中获取
 func cacheGetTokenByKey(key string) (*Token, error) {
-	hmacKey := common.GenerateHMAC(key)
+	// try memory cache first
+	token, _ := memoryCacheGetToken(key)
+	if token != nil {
+		return token, nil
+	}
+
 	if !common.RedisEnabled {
 		return nil, fmt.Errorf("redis is not enabled")
 	}
-	var token Token
-	err := common.RedisHGetObj(fmt.Sprintf("token:%s", hmacKey), &token)
+	hmacKey := common.GenerateHMAC(key)
+	var t Token
+	err := common.RedisHGetObj(fmt.Sprintf("token:%s", hmacKey), &t)
 	if err != nil {
 		return nil, err
 	}
-	token.Key = key
-	return &token, nil
+	t.Key = key
+	// update memory cache for future requests
+	memoryCacheSetToken(t)
+	return &t, nil
 }

@@ -3,8 +3,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"tea-api/common"
 	"strings"
+	"tea-api/common"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"gorm.io/gorm"
@@ -152,10 +152,10 @@ func GetTokenByKey(key string, fromDB bool) (token *Token, err error) {
 			})
 		}
 	}()
-	if !fromDB && common.RedisEnabled {
-		// Try Redis first
+	if !fromDB {
+		// try cache first
 		token, err := cacheGetTokenByKey(key)
-		if err == nil {
+		if err == nil && token != nil {
 			return token, nil
 		}
 		// Don't return error - fall through to DB
