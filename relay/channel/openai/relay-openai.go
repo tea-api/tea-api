@@ -8,14 +8,14 @@ import (
 	"math"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"strings"
 	"tea-api/common"
 	"tea-api/constant"
 	"tea-api/dto"
 	relaycommon "tea-api/relay/common"
 	"tea-api/relay/helper"
 	"tea-api/service"
-	"os"
-	"strings"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
@@ -136,18 +136,15 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 	)
 
 	helper.StreamScannerHandler(c, resp, info, func(data string) bool {
-		if lastStreamData != "" {
-			err := handleStreamFormat(c, info, lastStreamData, forceFormat, thinkToContent)
-			if err != nil {
-				common.SysError("error handling stream format: " + err.Error())
-			}
+		err := handleStreamFormat(c, info, data, forceFormat, thinkToContent)
+		if err != nil {
+			common.SysError("error handling stream format: " + err.Error())
 		}
 		lastStreamData = data
 		streamItems = append(streamItems, data)
 		return true
 	})
 
-	shouldSendLastResp := true
 	var lastStreamResponse dto.ChatCompletionsStreamResponse
 	err := common.DecodeJsonStr(lastStreamData, &lastStreamResponse)
 	if err == nil {
@@ -158,21 +155,10 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		if service.ValidUsage(lastStreamResponse.Usage) {
 			containStreamUsage = true
 			usage = lastStreamResponse.Usage
-			if !info.ShouldIncludeUsage {
-				shouldSendLastResp = false
-			}
-		}
-		for _, choice := range lastStreamResponse.Choices {
-			if choice.FinishReason != nil {
-				shouldSendLastResp = true
-			}
 		}
 	}
-
-	if shouldSendLastResp {
-		sendStreamData(c, info, lastStreamData, forceFormat, thinkToContent)
-		//err = handleStreamFormat(c, info, lastStreamData, forceFormat, thinkToContent)
-	}
+	// The last chunk has already been sent in the streaming loop.
+	// Keep usage information for final processing only.
 
 	// 处理token计算
 	if err := processTokens(info.RelayMode, streamItems, &responseTextBuilder, &toolCount); err != nil {
@@ -215,7 +201,7 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayI
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
-	
+
 	forceFormat := false
 	if forceFmt, ok := info.ChannelSetting[constant.ForceFormat].(bool); ok {
 		forceFormat = forceFmt
