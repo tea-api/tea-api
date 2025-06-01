@@ -57,7 +57,10 @@ const Setup = () => {
 
         // If setup is already completed, redirect to home
         if (data.status) {
-          window.location.href = '/';
+          // 延迟重定向，确保状态更新
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 100);
         }
       } else {
         showError(t('获取初始化状态失败'));
@@ -119,20 +122,19 @@ const Setup = () => {
 
         if (success) {
           showNotice(t('系统初始化成功，正在跳转...'));
+          // 初始化成功后，直接跳转到首页，不要reload
           setTimeout(() => {
-            window.location.reload();
+            window.location.href = '/';
           }, 1500);
         } else {
           showError(message || t('初始化失败，请重试'));
+          setLoading(false);
         }
       })
       .catch((error) => {
         console.error('API error:', error);
         showError(t('系统初始化失败，请重试'));
         setLoading(false);
-      })
-      .finally(() => {
-        // setLoading(false);
       });
   };
 
