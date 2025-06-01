@@ -95,10 +95,10 @@ export default function DataDashboard(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) => {
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       DataExportEnabled: value,
-                    });
+                    }));
                   }}
                 />
               </Col>
@@ -114,10 +114,10 @@ export default function DataDashboard(props) {
                   placeholder={t('数据看板更新间隔')}
                   field={'DataExportInterval'}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       DataExportInterval: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -130,10 +130,10 @@ export default function DataDashboard(props) {
                   placeholder={t('数据看板默认时间粒度')}
                   style={{ width: 180 }}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       DataExportDefaultTime: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>

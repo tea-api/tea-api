@@ -92,10 +92,10 @@ export default function SettingsMonitoring(props) {
                   placeholder={''}
                   field={'ChannelDisableThreshold'}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       ChannelDisableThreshold: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -109,10 +109,10 @@ export default function SettingsMonitoring(props) {
                   placeholder={''}
                   field={'QuotaRemindThreshold'}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       QuotaRemindThreshold: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -126,10 +126,10 @@ export default function SettingsMonitoring(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) => {
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       AutomaticDisableChannelEnabled: value,
-                    });
+                    }));
                   }}
                 />
               </Col>
@@ -141,10 +141,10 @@ export default function SettingsMonitoring(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       AutomaticEnableChannelEnabled: value,
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -160,7 +160,7 @@ export default function SettingsMonitoring(props) {
                   field={'AutomaticDisableKeywords'}
                   autosize={{ minRows: 6, maxRows: 12 }}
                   onChange={(value) =>
-                    setInputs({ ...inputs, AutomaticDisableKeywords: value })
+                    setInputs((prevInputs) => ({ ...(prevInputs || {}), AutomaticDisableKeywords: value }))
                   }
                 />
               </Col>

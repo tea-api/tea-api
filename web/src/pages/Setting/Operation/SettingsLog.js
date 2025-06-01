@@ -109,10 +109,10 @@ export default function SettingsLog(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) => {
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       LogConsumeEnabled: value,
-                    });
+                    }));
                   }}
                 />
               </Col>
@@ -124,10 +124,10 @@ export default function SettingsLog(props) {
                     type='dateTime'
                     inputReadOnly={true}
                     onChange={(value) => {
-                      setInputs({
-                        ...inputs,
+                      setInputs((prevInputs) => ({
+                        ...(prevInputs || {}),
                         historyTimestamp: value,
-                      });
+                      }));
                     }}
                   />
                   <Button size='default' onClick={onCleanHistoryLog}>

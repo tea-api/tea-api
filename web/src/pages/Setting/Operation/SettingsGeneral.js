@@ -46,7 +46,7 @@ export default function GeneralSettings(props) {
 
   function handleFieldChange(fieldName) {
     return (value) => {
-      setInputs((inputs) => ({ ...inputs, [fieldName]: value }));
+      setInputs((inputs) => ({ ...(inputs || {}), [fieldName]: value }));
     };
   }
 

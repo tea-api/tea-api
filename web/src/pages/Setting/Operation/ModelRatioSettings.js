@@ -137,7 +137,7 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs({ ...inputs, ModelPrice: value })
+                  setInputs((prevInputs) => ({ ...(prevInputs || {}), ModelPrice: value }))
                 }
               />
             </Col>
@@ -158,7 +158,7 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs({ ...inputs, ModelRatio: value })
+                  setInputs((prevInputs) => ({ ...(prevInputs || {}), ModelRatio: value }))
                 }
               />
             </Col>
@@ -179,7 +179,7 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs({ ...inputs, CacheRatio: value })
+                  setInputs((prevInputs) => ({ ...(prevInputs || {}), CacheRatio: value }))
                 }
               />
             </Col>
@@ -201,7 +201,7 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs({ ...inputs, CompletionRatio: value })
+                  setInputs((prevInputs) => ({ ...(prevInputs || {}), CompletionRatio: value }))
                 }
               />
             </Col>

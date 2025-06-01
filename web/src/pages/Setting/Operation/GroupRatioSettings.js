@@ -110,7 +110,7 @@ export default function GroupRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs({ ...inputs, GroupRatio: value })
+                  setInputs((prevInputs) => ({ ...(prevInputs || {}), GroupRatio: value }))
                 }
               />
             </Col>
@@ -131,7 +131,7 @@ export default function GroupRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs({ ...inputs, UserUsableGroups: value })
+                  setInputs((prevInputs) => ({ ...(prevInputs || {}), UserUsableGroups: value }))
                 }
               />
             </Col>

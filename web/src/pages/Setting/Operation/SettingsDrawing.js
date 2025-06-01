@@ -89,10 +89,10 @@ export default function SettingsDrawing(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) => {
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       DrawingEnabled: value,
-                    });
+                    }));
                   }}
                 />
               </Col>
@@ -104,10 +104,10 @@ export default function SettingsDrawing(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       MjNotifyEnabled: value,
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -119,10 +119,10 @@ export default function SettingsDrawing(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       MjAccountFilterEnabled: value,
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -134,10 +134,10 @@ export default function SettingsDrawing(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       MjForwardUrlEnabled: value,
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -155,10 +155,10 @@ export default function SettingsDrawing(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       MjModeClearEnabled: value,
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -170,10 +170,10 @@ export default function SettingsDrawing(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       MjActionCheckSuccessEnabled: value,
-                    })
+                    }))
                   }
                 />
               </Col>

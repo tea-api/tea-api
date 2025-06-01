@@ -71,39 +71,44 @@ const OperationSetting = () => {
   let [loading, setLoading] = useState(false);
 
   const getOptions = async () => {
-    const res = await API.get('/api/option/');
-    const { success, message, data } = res.data;
-    if (success) {
-      let newInputs = {};
-      data.forEach((item) => {
-        if (
-          item.key === 'ModelRatio' ||
-          item.key === 'GroupRatio' ||
-          item.key === 'UserUsableGroups' ||
-          item.key === 'CompletionRatio' ||
-          item.key === 'ModelPrice' ||
-          item.key === 'CacheRatio'
-        ) {
-          try {
-            item.value = JSON.stringify(JSON.parse(item.value), null, 2);
-          } catch (error) {
-            console.error('failed to parse option', item.key, error);
-            item.value = item.value || '';
+    try {
+      const res = await API.get('/api/option/');
+      const { success, message, data } = res.data;
+      if (success && data) {
+        let newInputs = {};
+        data.forEach((item) => {
+          if (
+            item.key === 'ModelRatio' ||
+            item.key === 'GroupRatio' ||
+            item.key === 'UserUsableGroups' ||
+            item.key === 'CompletionRatio' ||
+            item.key === 'ModelPrice' ||
+            item.key === 'CacheRatio'
+          ) {
+            try {
+              item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+            } catch (error) {
+              console.error('failed to parse option', item.key, error);
+              item.value = item.value || '';
+            }
           }
-        }
-        if (
-          item.key.endsWith('Enabled') ||
-          ['DefaultCollapseSidebar'].includes(item.key)
-        ) {
-          newInputs[item.key] = item.value === 'true' ? true : false;
-        } else {
-          newInputs[item.key] = item.value;
-        }
-      });
+          if (
+            item.key.endsWith('Enabled') ||
+            ['DefaultCollapseSidebar'].includes(item.key)
+          ) {
+            newInputs[item.key] = item.value === 'true' ? true : false;
+          } else {
+            newInputs[item.key] = item.value;
+          }
+        });
 
-      setInputs(newInputs);
-    } else {
-      showError(message);
+        setInputs(newInputs);
+      } else {
+        showError(message || '获取配置失败');
+      }
+    } catch (error) {
+      console.error('获取配置失败:', error);
+      showError('获取配置失败，请刷新页面重试');
     }
   };
   async function onRefresh() {

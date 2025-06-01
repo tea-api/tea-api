@@ -154,10 +154,10 @@ export default function SettingsChats(props) {
               },
             ]}
             onChange={(value) =>
-              setInputs({
-                ...inputs,
+              setInputs((prevInputs) => ({
+                ...(prevInputs || {}),
                 Chats: value,
-              })
+              }))
             }
           />
         </Form.Section>

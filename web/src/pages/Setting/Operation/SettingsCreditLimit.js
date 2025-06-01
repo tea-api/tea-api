@@ -86,10 +86,10 @@ export default function SettingsCreditLimit(props) {
                   suffix={'Token'}
                   placeholder={''}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       QuotaForNewUser: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -103,10 +103,10 @@ export default function SettingsCreditLimit(props) {
                   extraText={t('请求结束后多退少补')}
                   placeholder={''}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       PreConsumedQuota: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -120,10 +120,10 @@ export default function SettingsCreditLimit(props) {
                   extraText={''}
                   placeholder={t('例如：2000')}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       QuotaForInviter: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -139,10 +139,10 @@ export default function SettingsCreditLimit(props) {
                   extraText={''}
                   placeholder={t('例如：1000')}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       QuotaForInvitee: String(value),
-                    })
+                    }))
                   }
                 />
               </Col>

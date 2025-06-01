@@ -84,10 +84,10 @@ export default function SettingsSensitiveWords(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) => {
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       CheckSensitiveEnabled: value,
-                    });
+                    }));
                   }}
                 />
               </Col>
@@ -99,10 +99,10 @@ export default function SettingsSensitiveWords(props) {
                   checkedText='｜'
                   uncheckedText='〇'
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       CheckSensitiveOnPromptEnabled: value,
-                    })
+                    }))
                   }
                 />
               </Col>
@@ -115,10 +115,10 @@ export default function SettingsSensitiveWords(props) {
                   placeholder={t('一行一个屏蔽词，不需要符号分割')}
                   field={'SensitiveWords'}
                   onChange={(value) =>
-                    setInputs({
-                      ...inputs,
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
                       SensitiveWords: value,
-                    })
+                    }))
                   }
                   style={{ fontFamily: 'JetBrains Mono, Consolas' }}
                   autosize={{ minRows: 6, maxRows: 12 }}
