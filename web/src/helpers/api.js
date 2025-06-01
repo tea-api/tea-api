@@ -1,31 +1,34 @@
 import { getUserIdFromLocalStorage, showError } from './utils';
 import axios from 'axios';
 
-export let API = axios.create({
-  baseURL: import.meta.env.VITE_REACT_APP_SERVER_URL
-    ? import.meta.env.VITE_REACT_APP_SERVER_URL
-    : '',
-  headers: {
-    'New-API-User': getUserIdFromLocalStorage(),
-    'Cache-Control': 'no-store',
-  },
-});
-
-export function updateAPI() {
-  API = axios.create({
+function createAPIInstance() {
+  const instance = axios.create({
     baseURL: import.meta.env.VITE_REACT_APP_SERVER_URL
       ? import.meta.env.VITE_REACT_APP_SERVER_URL
       : '',
     headers: {
-      'New-API-User': getUserIdFromLocalStorage(),
+      'New-Api-User': getUserIdFromLocalStorage(),
       'Cache-Control': 'no-store',
     },
   });
+
+  instance.interceptors.request.use((config) => {
+    config.headers['New-Api-User'] = getUserIdFromLocalStorage();
+    return config;
+  });
+
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      showError(error);
+    },
+  );
+
+  return instance;
 }
 
-API.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    showError(error);
-  },
-);
+export let API = createAPIInstance();
+
+export function updateAPI() {
+  API = createAPIInstance();
+}

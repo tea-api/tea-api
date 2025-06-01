@@ -92,6 +92,17 @@ const OperationSetting = () => {
               item.value = item.value || '';
             }
           }
+                  if (item.key === 'SpecialRewardDays' || item.key === 'SpecialRewards') {
+          try {
+            item.value = JSON.parse(item.value);
+            if (!Array.isArray(item.value)) {
+              item.value = [];
+            }
+          } catch (error) {
+            console.error('failed to parse option', item.key, error);
+            item.value = [];
+          }
+        }
           if (
             item.key.endsWith('Enabled') ||
             ['DefaultCollapseSidebar'].includes(item.key)
