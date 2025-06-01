@@ -114,7 +114,7 @@ export default function SettingsChats(props) {
     }
     setInputs(currentInputs);
     setInputsRow(structuredClone(currentInputs));
-    refForm.current.setValues(currentInputs);
+    if (refForm.current) refForm.current.setValues(currentInputs);
   }, [props.options]);
 
   return (

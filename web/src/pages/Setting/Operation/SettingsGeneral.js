@@ -53,25 +53,28 @@ export default function GeneralSettings(props) {
   function onSubmit() {
     // 创建一个更新项目的数组
     let updateArray = [];
-    
+
     // 遍历所有输入项，检查是否有变化
     for (const key in inputs) {
       if (inputs[key] !== inputsRow[key]) {
         updateArray.push({
           key: key,
           oldValue: inputsRow[key],
-          newValue: inputs[key]
+          newValue: inputs[key],
         });
       }
     }
-    
+
     if (!updateArray.length) return showWarning(t('你似乎并没有修改什么'));
-    
+
     const requestQueue = updateArray.map((item) => {
       let value = '';
       if (typeof item.newValue === 'boolean') {
         value = String(item.newValue);
-      } else if (Array.isArray(item.newValue) && (item.key === 'SpecialRewardDays' || item.key === 'SpecialRewards')) {
+      } else if (
+        Array.isArray(item.newValue) &&
+        (item.key === 'SpecialRewardDays' || item.key === 'SpecialRewards')
+      ) {
         // 对数组类型的特殊选项进行JSON字符串转换
         value = JSON.stringify(item.newValue);
       } else {
@@ -82,7 +85,7 @@ export default function GeneralSettings(props) {
         value,
       });
     });
-    
+
     setLoading(true);
     Promise.all(requestQueue)
       .then((res) => {
@@ -112,7 +115,7 @@ export default function GeneralSettings(props) {
     }
     setInputs(currentInputs);
     setInputsRow(structuredClone(currentInputs));
-    refForm.current.setValues(currentInputs);
+    if (refForm.current) refForm.current.setValues(currentInputs);
   }, [props.options]);
 
   return (
@@ -236,7 +239,7 @@ export default function GeneralSettings(props) {
                 />
               </Col>
             </Row>
-            
+
             {/* 签到设置区域 */}
             {inputs.CheckinEnabled && (
               <Row gutter={16}>
@@ -260,7 +263,9 @@ export default function GeneralSettings(props) {
                           initValue={1000}
                           min={0}
                           placeholder={t('连续签到每天额外奖励')}
-                          onChange={handleFieldChange('ContinuousCheckinReward')}
+                          onChange={handleFieldChange(
+                            'ContinuousCheckinReward',
+                          )}
                         />
                       </Col>
                       <Col xs={24} sm={12} md={8} lg={8} xl={8}>
@@ -271,7 +276,9 @@ export default function GeneralSettings(props) {
                           min={1}
                           max={30}
                           placeholder={t('连续签到奖励最多累计天数')}
-                          onChange={handleFieldChange('MaxContinuousRewardDays')}
+                          onChange={handleFieldChange(
+                            'MaxContinuousRewardDays',
+                          )}
                         />
                       </Col>
                     </Row>
@@ -302,9 +309,13 @@ export default function GeneralSettings(props) {
                             const numericValues = value
                               .map((v) => parseInt(v))
                               .filter((v) => !isNaN(v) && v > 0);
-                            handleFieldChange('SpecialRewardDays')(numericValues);
+                            handleFieldChange('SpecialRewardDays')(
+                              numericValues,
+                            );
                           }}
-                          onInputExceed={() => showWarning(t('已达到最大输入数量'))}
+                          onInputExceed={() =>
+                            showWarning(t('已达到最大输入数量'))
+                          }
                           addOnBlur={true}
                         />
                       </Col>
@@ -323,7 +334,9 @@ export default function GeneralSettings(props) {
                               .filter((v) => !isNaN(v) && v > 0);
                             handleFieldChange('SpecialRewards')(numericValues);
                           }}
-                          onInputExceed={() => showWarning(t('已达到最大输入数量'))}
+                          onInputExceed={() =>
+                            showWarning(t('已达到最大输入数量'))
+                          }
                           addOnBlur={true}
                         />
                       </Col>
@@ -331,7 +344,9 @@ export default function GeneralSettings(props) {
                     <Row>
                       <Banner
                         type='info'
-                        description={t('特殊奖励天数和奖励额度需一一对应，例如第7天奖励20000，第15天奖励50000，第30天奖励100000')}
+                        description={t(
+                          '特殊奖励天数和奖励额度需一一对应，例如第7天奖励20000，第15天奖励50000，第30天奖励100000',
+                        )}
                         bordered
                         fullMode={false}
                       />
@@ -340,7 +355,7 @@ export default function GeneralSettings(props) {
                 </Col>
               </Row>
             )}
-            
+
             <Row>
               <Button size='default' onClick={onSubmit}>
                 {t('保存通用设置')}

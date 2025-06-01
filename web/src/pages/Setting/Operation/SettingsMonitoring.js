@@ -67,7 +67,7 @@ export default function SettingsMonitoring(props) {
     }
     setInputs(currentInputs);
     setInputsRow(structuredClone(currentInputs));
-    refForm.current.setValues(currentInputs);
+    if (refForm.current) refForm.current.setValues(currentInputs);
   }, [props.options]);
 
   return (
@@ -160,7 +160,10 @@ export default function SettingsMonitoring(props) {
                   field={'AutomaticDisableKeywords'}
                   autosize={{ minRows: 6, maxRows: 12 }}
                   onChange={(value) =>
-                    setInputs((prevInputs) => ({ ...(prevInputs || {}), AutomaticDisableKeywords: value }))
+                    setInputs((prevInputs) => ({
+                      ...(prevInputs || {}),
+                      AutomaticDisableKeywords: value,
+                    }))
                   }
                 />
               </Col>

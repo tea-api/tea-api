@@ -83,7 +83,7 @@ export default function GroupRatioSettings(props) {
     }
     setInputs(currentInputs);
     setInputsRow(structuredClone(currentInputs));
-    refForm.current.setValues(currentInputs);
+    if (refForm.current) refForm.current.setValues(currentInputs);
   }, [props.options]);
 
   return (
@@ -110,7 +110,10 @@ export default function GroupRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs((prevInputs) => ({ ...(prevInputs || {}), GroupRatio: value }))
+                  setInputs((prevInputs) => ({
+                    ...(prevInputs || {}),
+                    GroupRatio: value,
+                  }))
                 }
               />
             </Col>
@@ -131,7 +134,10 @@ export default function GroupRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs((prevInputs) => ({ ...(prevInputs || {}), UserUsableGroups: value }))
+                  setInputs((prevInputs) => ({
+                    ...(prevInputs || {}),
+                    UserUsableGroups: value,
+                  }))
                 }
               />
             </Col>

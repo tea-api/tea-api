@@ -64,7 +64,7 @@ export default function SettingsSensitiveWords(props) {
     }
     setInputs(currentInputs);
     setInputsRow(structuredClone(currentInputs));
-    refForm.current.setValues(currentInputs);
+    if (refForm.current) refForm.current.setValues(currentInputs);
   }, [props.options]);
   return (
     <>

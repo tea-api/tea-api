@@ -107,7 +107,7 @@ export default function ModelRatioSettings(props) {
     }
     setInputs(currentInputs);
     setInputsRow(structuredClone(currentInputs));
-    refForm.current.setValues(currentInputs);
+    if (refForm.current) refForm.current.setValues(currentInputs);
   }, [props.options]);
 
   return (
@@ -137,7 +137,10 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs((prevInputs) => ({ ...(prevInputs || {}), ModelPrice: value }))
+                  setInputs((prevInputs) => ({
+                    ...(prevInputs || {}),
+                    ModelPrice: value,
+                  }))
                 }
               />
             </Col>
@@ -158,7 +161,10 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs((prevInputs) => ({ ...(prevInputs || {}), ModelRatio: value }))
+                  setInputs((prevInputs) => ({
+                    ...(prevInputs || {}),
+                    ModelRatio: value,
+                  }))
                 }
               />
             </Col>
@@ -179,7 +185,10 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs((prevInputs) => ({ ...(prevInputs || {}), CacheRatio: value }))
+                  setInputs((prevInputs) => ({
+                    ...(prevInputs || {}),
+                    CacheRatio: value,
+                  }))
                 }
               />
             </Col>
@@ -201,7 +210,10 @@ export default function ModelRatioSettings(props) {
                   },
                 ]}
                 onChange={(value) =>
-                  setInputs((prevInputs) => ({ ...(prevInputs || {}), CompletionRatio: value }))
+                  setInputs((prevInputs) => ({
+                    ...(prevInputs || {}),
+                    CompletionRatio: value,
+                  }))
                 }
               />
             </Col>
