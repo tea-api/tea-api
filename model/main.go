@@ -1,7 +1,6 @@
 package model
 
 import (
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -117,6 +116,25 @@ func chooseDB(envName string) (*gorm.DB, error) {
 				dsn += "?parseTime=true"
 			}
 		}
+
+		// 添加连接超时和等待超时参数
+		if !strings.Contains(dsn, "timeout") {
+			dsn += "&timeout=30s"
+		}
+		if !strings.Contains(dsn, "readTimeout") {
+			dsn += "&readTimeout=30s"
+		}
+		if !strings.Contains(dsn, "writeTimeout") {
+			dsn += "&writeTimeout=30s"
+		}
+		// 增加等待超时设置，防止连接被意外关闭
+		if !strings.Contains(dsn, "wait_timeout") {
+			dsn += "&wait_timeout=86400" // 24小时
+		}
+		if !strings.Contains(dsn, "interactive_timeout") {
+			dsn += "&interactive_timeout=86400" // 24小时
+		}
+
 		common.UsingMySQL = true
 		return gorm.Open(mysql.Open(dsn), &gorm.Config{
 			PrepareStmt: true, // precompile SQL
@@ -141,15 +159,34 @@ func InitDB() (err error) {
 		if err != nil {
 			return err
 		}
-		sqlDB.SetMaxIdleConns(common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 100))
-		sqlDB.SetMaxOpenConns(common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 1000))
-		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_LIFETIME", 60)))
+
+		// 调整连接池参数，确保长连接保持活跃
+		sqlDB.SetMaxIdleConns(common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 20))
+		sqlDB.SetMaxOpenConns(common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 100))
+
+		// 设置连接最大生存时间，确保连接及时刷新
+		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_LIFETIME", 3600)))
+		// 设置空闲连接最大存活时间
+		sqlDB.SetConnMaxIdleTime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_IDLE_TIME", 1800)))
+
+		// 尝试执行ping操作以测试连接
+		if err = sqlDB.Ping(); err != nil {
+			common.SysError("MySQL connection ping failed: " + err.Error())
+			return err
+		}
+
+		// 启动MySQL连接保持
+		go KeepMySQLAlive()
 
 		if !common.IsMasterNode {
 			return nil
 		}
 		if common.UsingMySQL {
 			_, _ = sqlDB.Exec("ALTER TABLE channels MODIFY model_mapping TEXT;") // TODO: delete this line when most users have upgraded
+
+			// 设置MySQL会话变量，增加超时时间
+			_, _ = sqlDB.Exec("SET SESSION wait_timeout=86400")
+			_, _ = sqlDB.Exec("SET SESSION interactive_timeout=86400")
 		}
 		common.SysLog("database migration started")
 		err = migrateDB()
@@ -175,19 +212,32 @@ func InitLogDB() (err error) {
 		if err != nil {
 			return err
 		}
-		sqlDB.SetMaxIdleConns(common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 100))
-		sqlDB.SetMaxOpenConns(common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 1000))
-		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_LIFETIME", 60)))
+
+		// 调整连接池参数，确保长连接保持活跃
+		sqlDB.SetMaxIdleConns(common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 20))
+		sqlDB.SetMaxOpenConns(common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 100))
+
+		// 设置连接最大生存时间，确保连接及时刷新
+		sqlDB.SetConnMaxLifetime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_LIFETIME", 3600)))
+		// 设置空闲连接最大存活时间
+		sqlDB.SetConnMaxIdleTime(time.Second * time.Duration(common.GetEnvOrDefault("SQL_MAX_IDLE_TIME", 1800)))
+
+		// 尝试执行ping操作以测试连接
+		if err = sqlDB.Ping(); err != nil {
+			common.SysError("MySQL LOG connection ping failed: " + err.Error())
+			return err
+		}
 
 		if !common.IsMasterNode {
 			return nil
 		}
-		//if common.UsingMySQL {
-		//	_, _ = sqlDB.Exec("DROP INDEX idx_channels_key ON channels;")             // TODO: delete this line when most users have upgraded
-		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY action VARCHAR(40);")   // TODO: delete this line when most users have upgraded
-		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY progress VARCHAR(30);") // TODO: delete this line when most users have upgraded
-		//	_, _ = sqlDB.Exec("ALTER TABLE midjourneys MODIFY status VARCHAR(20);")   // TODO: delete this line when most users have upgraded
-		//}
+
+		if common.UsingMySQL {
+			// 设置MySQL会话变量，增加超时时间
+			_, _ = sqlDB.Exec("SET SESSION wait_timeout=86400")
+			_, _ = sqlDB.Exec("SET SESSION interactive_timeout=86400")
+		}
+
 		common.SysLog("database migration started")
 		err = migrateLOGDB()
 		return err
@@ -289,26 +339,72 @@ var (
 )
 
 func PingDB() error {
-	pingMutex.Lock()
-	defer pingMutex.Unlock()
-
-	if time.Since(lastPingTime) < time.Second*10 {
-		return nil
-	}
-
 	sqlDB, err := DB.DB()
 	if err != nil {
-		log.Printf("Error getting sql.DB from GORM: %v", err)
 		return err
 	}
 
 	err = sqlDB.Ping()
 	if err != nil {
-		log.Printf("Error pinging DB: %v", err)
 		return err
 	}
 
-	lastPingTime = time.Now()
-	common.SysLog("Database pinged successfully")
+	// 如果LOG_DB不同于DB，也ping它
+	if os.Getenv("LOG_SQL_DSN") != "" && LOG_DB != DB {
+		logSqlDB, err := LOG_DB.DB()
+		if err != nil {
+			return err
+		}
+
+		err = logSqlDB.Ping()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+// 定期检查和保持MySQL连接
+func KeepMySQLAlive() {
+	if !common.UsingMySQL {
+		return
+	}
+
+	// 每30秒执行一次Ping操作
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if err := PingDB(); err != nil {
+			common.SysError("MySQL连接Ping失败，尝试重新连接: " + err.Error())
+			// 尝试重新连接
+			sqlDB, err := DB.DB()
+			if err != nil {
+				common.SysError("获取SQL DB实例失败: " + err.Error())
+				continue
+			}
+
+			if err = sqlDB.Ping(); err != nil {
+				common.SysError("MySQL重新连接失败: " + err.Error())
+			} else {
+				common.SysLog("MySQL重新连接成功")
+			}
+
+			// 如果LOG_DB不同于DB，也检查它
+			if os.Getenv("LOG_SQL_DSN") != "" && LOG_DB != DB {
+				logSqlDB, err := LOG_DB.DB()
+				if err != nil {
+					common.SysError("获取LOG SQL DB实例失败: " + err.Error())
+					continue
+				}
+
+				if err = logSqlDB.Ping(); err != nil {
+					common.SysError("MySQL LOG DB重新连接失败: " + err.Error())
+				} else {
+					common.SysLog("MySQL LOG DB重新连接成功")
+				}
+			}
+		}
+	}
 }
