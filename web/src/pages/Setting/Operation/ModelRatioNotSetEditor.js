@@ -123,10 +123,19 @@ export default function ModelRatioNotSetEditor(props) {
   const SubmitData = async () => {
     setLoading(true);
     const output = {
-      ModelPrice: JSON.parse(props.options.ModelPrice || '{}'),
-      ModelRatio: JSON.parse(props.options.ModelRatio || '{}'),
-      CompletionRatio: JSON.parse(props.options.CompletionRatio || '{}'),
+      ModelPrice: {},
+      ModelRatio: {},
+      CompletionRatio: {},
     };
+    try {
+      output.ModelPrice = JSON.parse(props.options.ModelPrice || '{}');
+      output.ModelRatio = JSON.parse(props.options.ModelRatio || '{}');
+      output.CompletionRatio = JSON.parse(
+        props.options.CompletionRatio || '{}',
+      );
+    } catch (error) {
+      console.error('failed to parse model ratio options', error);
+    }
 
     try {
       // 数据转换 - 只处理已修改的模型

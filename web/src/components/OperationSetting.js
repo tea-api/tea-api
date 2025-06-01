@@ -84,7 +84,12 @@ const OperationSetting = () => {
           item.key === 'ModelPrice' ||
           item.key === 'CacheRatio'
         ) {
-          item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+          try {
+            item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+          } catch (error) {
+            console.error('failed to parse option', item.key, error);
+            item.value = item.value || '';
+          }
         }
         if (
           item.key.endsWith('Enabled') ||

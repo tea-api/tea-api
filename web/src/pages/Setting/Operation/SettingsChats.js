@@ -100,8 +100,13 @@ export default function SettingsChats(props) {
     for (let key in props.options) {
       if (Object.keys(inputs).includes(key)) {
         if (key === 'Chats') {
-          const obj = JSON.parse(props.options[key]);
-          currentInputs[key] = JSON.stringify(obj, null, 2);
+          try {
+            const obj = JSON.parse(props.options[key]);
+            currentInputs[key] = JSON.stringify(obj, null, 2);
+          } catch (error) {
+            console.error('failed to parse Chats', error);
+            currentInputs[key] = props.options[key] || '';
+          }
         } else {
           currentInputs[key] = props.options[key];
         }
