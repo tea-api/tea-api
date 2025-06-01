@@ -72,14 +72,7 @@ services:
       - tea-network
     # ports:
     #   - "3306:3306"  # 如需从外部访问MySQL，请取消注释
-    command: >
-      --default-authentication-plugin=mysql_native_password 
-      --wait_timeout=86400 
-      --interactive_timeout=86400 
-      --max_connections=1000 
-      --net_read_timeout=60 
-      --net_write_timeout=60 
-      --connect_timeout=30
+    command: --default-authentication-plugin=mysql_native_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456"]
       interval: 10s

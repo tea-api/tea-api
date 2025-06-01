@@ -6,7 +6,7 @@ export let API = axios.create({
     ? import.meta.env.VITE_REACT_APP_SERVER_URL
     : '',
   headers: {
-    'New-Api-User': getUserIdFromLocalStorage(),
+    'New-API-User': getUserIdFromLocalStorage(),
     'Cache-Control': 'no-store',
   },
 });
@@ -17,7 +17,7 @@ export function updateAPI() {
       ? import.meta.env.VITE_REACT_APP_SERVER_URL
       : '',
     headers: {
-      'New-Api-User': getUserIdFromLocalStorage(),
+      'New-API-User': getUserIdFromLocalStorage(),
       'Cache-Control': 'no-store',
     },
   });

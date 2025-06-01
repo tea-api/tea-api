@@ -5,12 +5,12 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"strings"
-	"sync"
 	"tea-api/common"
 	"tea-api/constant"
 	relaycommon "tea-api/relay/common"
 	"tea-api/setting/operation_setting"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/bytedance/gopkg/util/gopool"
@@ -100,13 +100,7 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 		})
 	}
 
-	// 使用单独的goroutine处理数据扫描
-	dataDone := make(chan bool, 1)
 	common.RelayCtxGo(ctx, func() {
-		defer func() {
-			dataDone <- true
-		}()
-
 		for scanner.Scan() {
 			ticker.Reset(streamingTimeout)
 			data := scanner.Text()
@@ -128,10 +122,6 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 				writeMutex.Lock() // Lock before writing
 				success := dataHandler(data)
 				writeMutex.Unlock() // Unlock after writing
-				// 确保每次写入后都刷新
-				if flusher, ok := c.Writer.(http.Flusher); ok {
-					flusher.Flush()
-				}
 				if !success {
 					break
 				}
@@ -147,7 +137,6 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 		common.SafeSendBool(stopChan, true)
 	})
 
-	// 使用select监听多个通道
 	select {
 	case <-ticker.C:
 		// 超时处理逻辑
@@ -156,19 +145,5 @@ func StreamScannerHandler(c *gin.Context, resp *http.Response, info *relaycommon
 	case <-stopChan:
 		// 正常结束
 		common.LogInfo(c, "streaming finished")
-	}
-
-	// 确保数据处理goroutine完成
-	select {
-	case <-dataDone:
-		// 数据处理完成
-	case <-time.After(2 * time.Second):
-		// 防止长时间等待
-		common.LogError(c, "waiting for data processing goroutine timed out")
-	}
-
-	// 结束时发送最后的刷新信号
-	if flusher, ok := c.Writer.(http.Flusher); ok {
-		flusher.Flush()
 	}
 }

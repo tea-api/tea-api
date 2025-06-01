@@ -56,7 +56,7 @@ export default function GeneralSettings(props) {
     
     // 遍历所有输入项，检查是否有变化
     for (const key in inputs) {
-      if (JSON.stringify(inputs[key]) !== JSON.stringify(inputsRow[key])) {
+      if (inputs[key] !== inputsRow[key]) {
         updateArray.push({
           key: key,
           oldValue: inputsRow[key],

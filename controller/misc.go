@@ -35,10 +35,6 @@ func GetStatus(c *gin.Context) {
 	// 获取通用设置
 	generalSetting := operation_setting.GetGeneralSetting()
 
-	// 添加调试日志
-	common.SysLog("GetStatus: LinuxDOClientId = " + common.LinuxDOClientId)
-	common.SysLog(fmt.Sprintf("GetStatus: constant.Setup = %v", constant.Setup))
-
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -56,9 +52,7 @@ func GetStatus(c *gin.Context) {
 			"password_register":        common.PasswordRegisterEnabled,
 			"email_verification":       common.EmailVerificationEnabled,
 			"github_oauth":             common.GitHubOAuthEnabled,
-			"github_client_id":         common.GitHubClientId,
 			"linuxdo_oauth":            common.LinuxDOOAuthEnabled,
-			"linuxdo_client_id":        common.LinuxDOClientId,
 			"wechat_auth":              common.WeChatAuthEnabled,
 			"telegram_oauth":           common.TelegramOAuthEnabled,
 			"turnstile_check":          common.TurnstileCheckEnabled,

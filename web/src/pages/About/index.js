@@ -44,7 +44,7 @@ const About = () => {
                 https://github.com/tea-api/tea-api
               </a>
               <p>
-                TeaAPI © 2025 Tea-API | 基于 New API © 2025
+                TeaAPI © 2023 CalciumIon | 基于 One API v0.5.4 © 2023
                 JustSong。
               </p>
               <p>

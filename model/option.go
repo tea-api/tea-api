@@ -395,16 +395,14 @@ func updateOptionMap(key string, value string) (err error) {
 	case "CheckinStreakReset":
 		common.CheckinStreakReset, _ = strconv.ParseBool(value)
 	case "SpecialRewardDays":
-		var specialDays []int
-		err = json.Unmarshal([]byte(value), &specialDays)
-		if err == nil {
-			common.SpecialRewardDays = specialDays
+		var days []int
+		if err := json.Unmarshal([]byte(value), &days); err == nil {
+			common.SpecialRewardDays = days
 		}
 	case "SpecialRewards":
-		var specialRewards []int
-		err = json.Unmarshal([]byte(value), &specialRewards)
-		if err == nil {
-			common.SpecialRewards = specialRewards
+		var rewards []int
+		if err := json.Unmarshal([]byte(value), &rewards); err == nil {
+			common.SpecialRewards = rewards
 		}
 	}
 	return err

@@ -13,7 +13,7 @@ const FooterBar = () => {
 
   const loadFooter = () => {
     let footer_html = localStorage.getItem('footer_html');
-    if (footer_html && footer_html !== 'undefined') {
+    if (footer_html) {
       setFooter(footer_html);
     }
   };
@@ -28,16 +28,16 @@ const FooterBar = () => {
         Tea API {import.meta.env.VITE_REACT_APP_VERSION}{' '}
       </a>
       {t('由')}{' '}
-      <a href='https://github.com/tea-api' target='_blank' rel='noreferrer'>
-        Tea-API
+      <a href='https://github.com/Calcium-Ion' target='_blank' rel='noreferrer'>
+        Calcium-Ion
       </a>{' '}
       {t('开发，基于')}{' '}
       <a
-        href='https://github.com/QuantumNous/new-api'
+        href='https://github.com/songquanpeng/one-api'
         target='_blank'
         rel='noreferrer'
       >
-        New API
+        One API
       </a>
     </div>
   );
@@ -61,7 +61,7 @@ const FooterBar = () => {
         paddingBottom: '5px',
       }}
     >
-      {footer && footer !== 'undefined' ? (
+      {footer ? (
         <div
           className='custom-footer'
           dangerouslySetInnerHTML={{ __html: footer }}

@@ -41,11 +41,10 @@ const EditRedemption = (props) => {
     count: 1,
     key: '',
     max_times: 1,
-    max_user_times: 1,
     expired_time: -1,
   };
   const [inputs, setInputs] = useState(originInputs);
-  const { name, quota, count, key, max_times, max_user_times, expired_time } = inputs;
+  const { name, quota, count, key, max_times, expired_time } = inputs;
 
   const handleCancel = () => {
     props.handleClose();
@@ -106,7 +105,6 @@ const EditRedemption = (props) => {
     localInputs.count = parseInt(localInputs.count);
     localInputs.quota = parseInt(localInputs.quota);
     localInputs.max_times = parseInt(localInputs.max_times);
-    localInputs.max_user_times = parseInt(localInputs.max_user_times);
     localInputs.name = name;
     if (localInputs.expired_time !== -1) {
       let time = Date.parse(localInputs.expired_time);
@@ -262,22 +260,6 @@ const EditRedemption = (props) => {
             placeholder={t('最多使用次数')}
             onChange={(value) => handleInputChange('max_times', value)}
             value={max_times}
-            autoComplete='new-password'
-            type='number'
-          />
-          <Divider />
-          <div style={{ marginTop: 20 }}>
-            <Typography.Text>
-              {t('每用户最多可用次数') + '（每个用户最多可使用该兑换码的次数）'}
-            </Typography.Text>
-          </div>
-          <Input
-            style={{ marginTop: 8 }}
-            label={t('每用户最多使用次数')}
-            name='max_user_times'
-            placeholder={t('每用户最多使用次数')}
-            onChange={(value) => handleInputChange('max_user_times', value)}
-            value={max_user_times}
             autoComplete='new-password'
             type='number'
           />

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"tea-api/common"
 	"strconv"
 	"strings"
-	"tea-api/common"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"gorm.io/gorm"
@@ -309,7 +309,6 @@ func (user *User) Insert(inviterId int) error {
 			return err
 		}
 	}
-	// 设置用户初始额度
 	user.Quota = common.QuotaForNewUser
 	//user.SetAccessToken(common.GetUUID())
 	user.AffCode = common.GetRandomString(4)

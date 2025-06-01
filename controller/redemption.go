@@ -146,9 +146,6 @@ func AddRedemption(c *gin.Context) {
 	if redemption.MaxTimes <= 0 {
 		redemption.MaxTimes = 1
 	}
-	if redemption.MaxUserTimes <= 0 {
-		redemption.MaxUserTimes = 1
-	}
 	var keys []string
 	total := redemption.Count
 	if isFullyCustom {
@@ -170,14 +167,13 @@ func AddRedemption(c *gin.Context) {
 		}
 
 		cleanRedemption := model.Redemption{
-			UserId:       c.GetInt("id"),
-			Name:         redemption.Name,
-			Key:          key,
-			CreatedTime:  common.GetTimestamp(),
-			Quota:        redemption.Quota,
-			MaxTimes:     redemption.MaxTimes,
-			MaxUserTimes: redemption.MaxUserTimes,
-			ExpiredTime:  redemption.ExpiredTime,
+			UserId:      c.GetInt("id"),
+			Name:        redemption.Name,
+			Key:         key,
+			CreatedTime: common.GetTimestamp(),
+			Quota:       redemption.Quota,
+			MaxTimes:    redemption.MaxTimes,
+			ExpiredTime: redemption.ExpiredTime,
 		}
 		err = cleanRedemption.Insert()
 		if err != nil {
@@ -242,9 +238,6 @@ func UpdateRedemption(c *gin.Context) {
 		cleanRedemption.Quota = redemption.Quota
 		if redemption.MaxTimes > 0 {
 			cleanRedemption.MaxTimes = redemption.MaxTimes
-		}
-		if redemption.MaxUserTimes > 0 {
-			cleanRedemption.MaxUserTimes = redemption.MaxUserTimes
 		}
 		cleanRedemption.ExpiredTime = redemption.ExpiredTime
 	}

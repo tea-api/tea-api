@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"sync"
 	common2 "tea-api/common"
 	"tea-api/relay/common"
 	"tea-api/relay/constant"
 	"tea-api/relay/helper"
 	"tea-api/service"
 	"tea-api/setting/operation_setting"
+	"sync"
 	"time"
 
 	"github.com/bytedance/gopkg/util/gopool"
@@ -88,9 +88,6 @@ func DoWssRequest(a Adaptor, c *gin.Context, info *common.RelayInfo, requestBody
 	if err != nil {
 		return nil, fmt.Errorf("get request url failed: %w", err)
 	}
-	if common2.DebugEnabled {
-		println("fullRequestURL:", fullRequestURL)
-	}
 	targetHeader := http.Header{}
 	err = a.SetupRequestHeader(c, &targetHeader, info)
 	if err != nil {
@@ -101,30 +98,9 @@ func DoWssRequest(a Adaptor, c *gin.Context, info *common.RelayInfo, requestBody
 	if err != nil {
 		return nil, fmt.Errorf("dial failed to %s: %w", fullRequestURL, err)
 	}
-
-	// 发送初始请求体
-	if requestBody != nil {
-		all, err := io.ReadAll(requestBody)
-		if err != nil {
-			targetConn.Close()
-			return nil, fmt.Errorf("read request body failed: %w", err)
-		}
-		// 记录初始请求数据
-		if common2.DebugEnabled {
-			common2.LogInfo(c, fmt.Sprintf("sending initial WebSocket message: %s", string(all)))
-		}
-
-		err = helper.WssString(c, targetConn, string(all))
-		if err != nil {
-			targetConn.Close()
-			return nil, fmt.Errorf("send initial message failed: %w", err)
-		}
-
-		if common2.DebugEnabled {
-			common2.LogInfo(c, "initial WebSocket message sent successfully")
-		}
-	}
-
+	// send request body
+	//all, err := io.ReadAll(requestBody)
+	//err = service.WssString(c, targetConn, string(all))
 	return targetConn, nil
 }
 
@@ -147,20 +123,12 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 	if info.IsStream {
 		helper.SetEventStreamHeaders(c)
 
-		// 确保客户端不会主动断开连接
-		c.Writer.Header().Set("Keep-Alive", "timeout=600")
-		c.Writer.Header().Set("Connection", "keep-alive")
-
-		// 确保刷新首个响应头，让客户端知道连接已建立
-		if flusher, ok := c.Writer.(http.Flusher); ok {
-			flusher.Flush()
-		}
-
 		if pingEnabled {
 			pingInterval := time.Duration(generalSettings.PingIntervalSeconds) * time.Second
 			var pingerCtx context.Context
 			pingerCtx, stopPinger = context.WithCancel(c.Request.Context())
 			// 退出时清理 pingerCtx 防止泄露
+			defer stopPinger()
 			pingerWg.Add(1)
 			gopool.Go(func() {
 				defer pingerWg.Done()
@@ -182,7 +150,7 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 						err2 := helper.PingData(c)
 						pingMutex.Unlock()
 						if err2 != nil {
-							common2.LogError(c, "SSE ping error: "+err2.Error())
+							common2.LogError(c, "SSE ping error: "+err.Error())
 							return
 						}
 						if common2.DebugEnabled {
@@ -199,15 +167,9 @@ func doRequest(c *gin.Context, req *http.Request, info *common.RelayInfo) (*http
 		}
 	}
 
-	// 设置更长的超时时间
-	client.Timeout = time.Second * 120
 	resp, err := client.Do(req)
-
-	// 停止 ping goroutine 并等待其完成
+	// request结束后等待 ping goroutine 完成
 	if info.IsStream && pingEnabled {
-		if stopPinger != nil {
-			stopPinger()
-		}
 		pingerWg.Wait()
 	}
 	if err != nil {

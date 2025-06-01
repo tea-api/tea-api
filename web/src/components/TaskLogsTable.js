@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Label } from 'semantic-ui-react';
-import { useTranslation } from 'react-i18next';
 import {
   API,
   copy,
@@ -80,27 +79,26 @@ function renderDuration(submit_time, finishTime) {
 }
 
 const LogsTable = () => {
-  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
   const isAdminUser = isAdmin();
   const columns = [
     {
-      title: t('提交时间'),
+      title: '提交时间',
       dataIndex: 'submit_time',
       render: (text, record, index) => {
         return <div>{text ? renderTimestamp(text) : '-'}</div>;
       },
     },
     {
-      title: t('结束时间'),
+      title: '结束时间',
       dataIndex: 'finish_time',
       render: (text, record, index) => {
         return <div>{text ? renderTimestamp(text) : '-'}</div>;
       },
     },
     {
-      title: t('进度'),
+      title: '进度',
       dataIndex: 'progress',
       width: 50,
       render: (text, record, index) => {
@@ -125,7 +123,7 @@ const LogsTable = () => {
       },
     },
     {
-      title: t('花费时间'),
+      title: '花费时间',
       dataIndex: 'finish_time', // 以finish_time作为dataIndex
       key: 'finish_time',
       render: (finish, record) => {
@@ -134,7 +132,7 @@ const LogsTable = () => {
       },
     },
     {
-      title: t('渠道'),
+      title: '渠道',
       dataIndex: 'channel_id',
       className: isAdminUser ? 'tableShow' : 'tableHiddle',
       render: (text, record, index) => {
@@ -155,21 +153,21 @@ const LogsTable = () => {
       },
     },
     {
-      title: t('平台'),
+      title: '平台',
       dataIndex: 'platform',
       render: (text, record, index) => {
         return <div>{renderPlatform(text)}</div>;
       },
     },
     {
-      title: t('类型'),
+      title: '类型',
       dataIndex: 'action',
       render: (text, record, index) => {
         return <div>{renderType(text)}</div>;
       },
     },
     {
-      title: t('任务ID（点击查看详情）'),
+      title: '任务ID（点击查看详情）',
       dataIndex: 'task_id',
       render: (text, record, index) => {
         return (
@@ -187,7 +185,7 @@ const LogsTable = () => {
       },
     },
     {
-      title: t('任务状态'),
+      title: '任务状态',
       dataIndex: 'status',
       render: (text, record, index) => {
         return <div>{renderStatus(text)}</div>;
@@ -195,12 +193,12 @@ const LogsTable = () => {
     },
 
     {
-      title: t('失败原因'),
+      title: '失败原因',
       dataIndex: 'fail_reason',
       render: (text, record, index) => {
         // 如果text未定义，返回替代文本，例如空字符串''或其他
         if (!text) {
-          return t('无');
+          return '无';
         }
 
         return (
@@ -299,10 +297,10 @@ const LogsTable = () => {
 
   const copyText = async (text) => {
     if (await copy(text)) {
-      showSuccess(t('已复制：') + text);
+      showSuccess('已复制：' + text);
     } else {
       // setSearchKeyword(text);
-      Modal.error({ title: t('无法复制到剪贴板，请手动复制'), content: text });
+      Modal.error({ title: '无法复制到剪贴板，请手动复制', content: text });
     }
   };
 
@@ -323,7 +321,7 @@ const LogsTable = () => {
         return (
           <Label basic color='pink'>
             {' '}
-            {t('生成歌词')}{' '}
+            生成歌词{' '}
           </Label>
         );
 
@@ -331,7 +329,7 @@ const LogsTable = () => {
         return (
           <Label basic color='black'>
             {' '}
-            {t('未知')}{' '}
+            未知{' '}
           </Label>
         );
     }
@@ -362,56 +360,56 @@ const LogsTable = () => {
         return (
           <Label basic color='green'>
             {' '}
-            {t('成功')}{' '}
+            成功{' '}
           </Label>
         );
       case 'NOT_START':
         return (
           <Label basic color='black'>
             {' '}
-            {t('未启动')}{' '}
+            未启动{' '}
           </Label>
         );
       case 'SUBMITTED':
         return (
           <Label basic color='yellow'>
             {' '}
-            {t('队列中')}{' '}
+            队列中{' '}
           </Label>
         );
       case 'IN_PROGRESS':
         return (
           <Label basic color='blue'>
             {' '}
-            {t('执行中')}{' '}
+            执行中{' '}
           </Label>
         );
       case 'FAILURE':
         return (
           <Label basic color='red'>
             {' '}
-            {t('失败')}{' '}
+            失败{' '}
           </Label>
         );
       case 'QUEUED':
         return (
           <Label basic color='red'>
             {' '}
-            {t('排队中')}{' '}
+            排队中{' '}
           </Label>
         );
       case 'UNKNOWN':
         return (
           <Label basic color='red'>
             {' '}
-            {t('未知')}{' '}
+            未知{' '}
           </Label>
         );
       case '':
         return (
           <Label basic color='black'>
             {' '}
-            {t('正在提交')}{' '}
+            正在提交{' '}
           </Label>
         );
       default:
@@ -432,27 +430,27 @@ const LogsTable = () => {
             {isAdminUser && (
               <Form.Input
                 field='channel_id'
-                label={t('渠道 ID')}
+                label='渠道 ID'
                 style={{ width: '236px', marginBottom: '10px' }}
                 value={channel_id}
-                placeholder={t('可选值')}
+                placeholder={'可选值'}
                 name='channel_id'
                 onChange={(value) => handleInputChange(value, 'channel_id')}
               />
             )}
             <Form.Input
               field='task_id'
-              label={t('任务 ID')}
+              label={'任务 ID'}
               style={{ width: '236px', marginBottom: '10px' }}
               value={task_id}
-              placeholder={t('可选值')}
+              placeholder={'可选值'}
               name='task_id'
               onChange={(value) => handleInputChange(value, 'task_id')}
             />
 
             <Form.DatePicker
               field='start_timestamp'
-              label={t('起始时间')}
+              label={'起始时间'}
               style={{ width: '236px', marginBottom: '10px' }}
               initValue={start_timestamp}
               value={start_timestamp}
@@ -463,7 +461,7 @@ const LogsTable = () => {
             <Form.DatePicker
               field='end_timestamp'
               fluid
-              label={t('结束时间')}
+              label={'结束时间'}
               style={{ width: '236px', marginBottom: '10px' }}
               initValue={end_timestamp}
               value={end_timestamp}
@@ -472,13 +470,13 @@ const LogsTable = () => {
               onChange={(value) => handleInputChange(value, 'end_timestamp')}
             />
             <Button
-              label={t('查询')}
+              label={'查询'}
               type='primary'
               htmlType='submit'
               className='btn-margin-right'
               onClick={refresh}
             >
-              {t('查询')}
+              查询
             </Button>
           </>
         </Form>

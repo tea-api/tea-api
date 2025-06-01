@@ -28,8 +28,7 @@ import {
   ImagePreview,
 } from '@douyinfe/semi-ui';
 import { getChannelModels, loadChannelModels } from '../../components/utils.js';
-import { IconHelpCircle, IconSearch } from '@douyinfe/semi-icons';
-import KeyValueList from '../../components/custom/KeyValueList.js';
+import { IconHelpCircle } from '@douyinfe/semi-icons';
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo': 'gpt-3.5-turbo-0125',
@@ -101,20 +100,6 @@ const EditChannel = (props) => {
   const [customModel, setCustomModel] = useState('');
   const [modalImageUrl, setModalImageUrl] = useState('');
   const [isModalOpenurl, setIsModalOpenurl] = useState(false);
-  const [forceFormat, setForceFormat] = useState(false);
-  const [thinkingToContent, setThinkingToContent] = useState(false);
-  const [proxySetting, setProxySetting] = useState('');
-  const [showExtraSettings, setShowExtraSettings] = useState(false);
-  const [paramOverrideList, setParamOverrideList] = useState([
-    { key: '', value: '' },
-  ]);
-  const [statusCodeMappingList, setStatusCodeMappingList] = useState([
-    { key: '', value: '' },
-  ]);
-  const [showModelPicker, setShowModelPicker] = useState(false);
-  const [fetchedModels, setFetchedModels] = useState([]);
-  const [selectedModels, setSelectedModels] = useState([]);
-  const [modelSearchKeyword, setModelSearchKeyword] = useState('');
   const handleInputChange = (name, value) => {
     if (name === 'base_url' && value.endsWith('/v1')) {
       Modal.confirm({
@@ -202,35 +187,6 @@ const EditChannel = (props) => {
           2,
         );
       }
-      // parse extra settings
-      if (data.setting) {
-        try {
-          const settingObj = JSON.parse(data.setting);
-          setForceFormat(settingObj.force_format || false);
-          setProxySetting(settingObj.proxy || '');
-          setThinkingToContent(settingObj.thinking_to_content || false);
-        } catch (e) {}
-      }
-      if (data.param_override) {
-        try {
-          const obj = JSON.parse(data.param_override);
-          const list = Object.entries(obj).map(([k, v]) => ({
-            key: k,
-            value: typeof v === 'object' ? JSON.stringify(v) : String(v),
-          }));
-          if (list.length > 0) setParamOverrideList(list);
-        } catch (e) {}
-      }
-      if (data.status_code_mapping) {
-        try {
-          const obj = JSON.parse(data.status_code_mapping);
-          const list = Object.entries(obj).map(([k, v]) => ({
-            key: k,
-            value: v,
-          }));
-          if (list.length > 0) setStatusCodeMappingList(list);
-        } catch (e) {}
-      }
       setInputs(data);
       if (data.auto_ban === 0) {
         setAutoBan(false);
@@ -290,53 +246,6 @@ const EditChannel = (props) => {
     if (!err) {
       handleInputChange(name, Array.from(new Set(models)));
       showSuccess(t('获取模型列表成功'));
-    } else {
-      showError(t('获取模型列表失败'));
-    }
-    setLoading(false);
-  };
-
-  const fetchUpstreamModelListVisual = async () => {
-    setLoading(true);
-    const models = [];
-    let err = false;
-
-    if (isEdit) {
-      const res = await API.get('/api/channel/fetch_models/' + channelId);
-      if (res.data && res.data?.success) {
-        models.push(...res.data.data);
-      } else {
-        err = true;
-      }
-    } else {
-      if (!inputs?.['key']) {
-        showError(t('请填写密钥'));
-        err = true;
-      } else {
-        try {
-          const res = await API.post('/api/channel/fetch_models', {
-            base_url: inputs['base_url'],
-            type: inputs['type'],
-            key: inputs['key'],
-          });
-
-          if (res.data && res.data.success) {
-            models.push(...res.data.data);
-          } else {
-            err = true;
-          }
-        } catch (error) {
-          console.error('Error fetching models:', error);
-          err = true;
-        }
-      }
-    }
-
-    if (!err) {
-      setFetchedModels(Array.from(new Set(models)));
-      setSelectedModels([]);
-      setModelSearchKeyword('');
-      setShowModelPicker(true);
     } else {
       showError(t('获取模型列表失败'));
     }
@@ -421,35 +330,6 @@ const EditChannel = (props) => {
       return;
     }
     let localInputs = { ...inputs };
-    const settingObj = {};
-    if (forceFormat) settingObj['force_format'] = true;
-    if (proxySetting) settingObj['proxy'] = proxySetting;
-    if (thinkingToContent) settingObj['thinking_to_content'] = true;
-    localInputs.setting = Object.keys(settingObj).length
-      ? JSON.stringify(settingObj)
-      : '';
-    const paramObj = {};
-    paramOverrideList.forEach((pair) => {
-      if (pair.key !== '') {
-        try {
-          paramObj[pair.key] = JSON.parse(pair.value);
-        } catch (e) {
-          paramObj[pair.key] = pair.value;
-        }
-      }
-    });
-    localInputs.param_override = Object.keys(paramObj).length
-      ? JSON.stringify(paramObj)
-      : '';
-    const mappingObj = {};
-    statusCodeMappingList.forEach((pair) => {
-      if (pair.key !== '' && pair.value !== '') {
-        mappingObj[pair.key] = pair.value;
-      }
-    });
-    localInputs.status_code_mapping = Object.keys(mappingObj).length
-      ? JSON.stringify(mappingObj)
-      : '';
     if (localInputs.base_url && localInputs.base_url.endsWith('/')) {
       localInputs.base_url = localInputs.base_url.slice(
         0,
@@ -1023,14 +903,6 @@ const EditChannel = (props) => {
                 >
                   {t('获取模型列表')}
                 </Button>
-                <Button
-                  type='tertiary'
-                  onClick={() => {
-                    fetchUpstreamModelListVisual();
-                  }}
-                >
-                  {t('可视化获取模型')}
-                </Button>
               </Tooltip>
               <Button
                 type='warning'
@@ -1137,85 +1009,77 @@ const EditChannel = (props) => {
           />
           <>
             <div style={{ marginTop: 10 }}>
-              <Typography.Text
-                strong
-                style={{
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-                onClick={() => setShowExtraSettings(!showExtraSettings)}
-              >
-                {t('渠道额外设置')}：{showExtraSettings ? ' ▼' : ' ►'}
-              </Typography.Text>
+              <Typography.Text strong>{t('渠道额外设置')}：</Typography.Text>
             </div>
-            {showExtraSettings && (
-              <div
+            <TextArea
+              placeholder={
+                t(
+                  '此项可选，用于配置渠道特定设置，为一个 JSON 字符串，例如：',
+                ) + '\n{\n  "force_format": true\n}'
+              }
+              name='setting'
+              onChange={(value) => {
+                handleInputChange('setting', value);
+              }}
+              autosize
+              value={inputs.setting}
+              autoComplete='new-password'
+            />
+            <Space>
+              <Typography.Text
                 style={{
-                  marginTop: 8,
-                  padding: '8px 12px',
-                  border: '1px solid var(--semi-color-border)',
-                  borderRadius: '6px',
+                  color: 'rgba(var(--semi-blue-5), 1)',
+                  userSelect: 'none',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  handleInputChange(
+                    'setting',
+                    JSON.stringify(
+                      {
+                        force_format: true,
+                      },
+                      null,
+                      2,
+                    ),
+                  );
                 }}
               >
-                <Space vertical align='start' style={{ width: '100%' }}>
-                  <Checkbox
-                    checked={forceFormat}
-                    onChange={(e) => setForceFormat(e.target.checked)}
-                  >
-                    {t('强制格式化响应')}
-                  </Checkbox>
-                  <Checkbox
-                    checked={thinkingToContent}
-                    onChange={(e) => setThinkingToContent(e.target.checked)}
-                  >
-                    {t('将思考过程转为内容')}
-                  </Checkbox>
-                  <div style={{ width: '100%' }}>
-                    <Typography.Text>{t('代理设置')}：</Typography.Text>
-                    <Tooltip
-                      content={t(
-                        '支持 HTTP、HTTPS 和 SOCKS5 代理，例如：http://user:pass@host:port 或 socks5://host:port',
-                      )}
-                    >
-                      <IconHelpCircle size='small' style={{ marginLeft: 4 }} />
-                    </Tooltip>
-                    <Input
-                      style={{ marginTop: 4, width: '100%' }}
-                      placeholder={t('代理地址，例如：socks5://127.0.0.1:7890')}
-                      value={proxySetting}
-                      onChange={(val) => setProxySetting(val)}
-                      autoComplete='new-password'
-                    />
-                  </div>
-                  <Typography.Text
-                    style={{
-                      color: 'rgba(var(--semi-blue-5), 1)',
-                      userSelect: 'none',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => {
-                      window.open(
-                        'https://github.com/tea-api/tea-api/blob/main/docs/channel/other_setting.md',
-                      );
-                    }}
-                  >
-                    {t('设置说明')}
-                  </Typography.Text>
-                </Space>
-              </div>
-            )}
+                {t('填入模板')}
+              </Typography.Text>
+              <Typography.Text
+                style={{
+                  color: 'rgba(var(--semi-blue-5), 1)',
+                  userSelect: 'none',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  window.open(
+                    'https://github.com/tea-api/tea-api/blob/main/docs/channel/other_setting.md',
+                  );
+                }}
+              >
+                {t('设置说明')}
+              </Typography.Text>
+            </Space>
           </>
           <>
             <div style={{ marginTop: 10 }}>
               <Typography.Text strong>{t('参数覆盖')}：</Typography.Text>
             </div>
-            <KeyValueList
-              pairs={paramOverrideList}
-              onChange={setParamOverrideList}
-              addText={t('添加一项')}
-              keyPlaceholder='key'
-              valuePlaceholder='value'
+            <TextArea
+              placeholder={
+                t(
+                  '此项可选，用于覆盖请求参数。不支持覆盖 stream 参数。为一个 JSON 字符串，例如：',
+                ) + '\n{\n  "temperature": 0\n}'
+              }
+              name='setting'
+              onChange={(value) => {
+                handleInputChange('param_override', value);
+              }}
+              autosize
+              value={inputs.param_override}
+              autoComplete='new-password'
             />
           </>
           {inputs.type === 1 && (
@@ -1266,65 +1130,43 @@ const EditChannel = (props) => {
               {t('状态码复写（仅影响本地判断，不修改返回到上游的状态码）')}：
             </Typography.Text>
           </div>
-          <KeyValueList
-            pairs={statusCodeMappingList}
-            onChange={setStatusCodeMappingList}
-            addText={t('添加一项')}
-            keyPlaceholder='from'
-            valuePlaceholder='to'
+          <TextArea
+            placeholder={
+              t(
+                '此项可选，用于复写返回的状态码，比如将claude渠道的400错误复写为500（用于重试），请勿滥用该功能，例如：',
+              ) +
+              '\n' +
+              JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2)
+            }
+            name='status_code_mapping'
+            onChange={(value) => {
+              handleInputChange('status_code_mapping', value);
+            }}
+            autosize
+            value={inputs.status_code_mapping}
+            autoComplete='new-password'
           />
+          <Typography.Text
+            style={{
+              color: 'rgba(var(--semi-blue-5), 1)',
+              userSelect: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              handleInputChange(
+                'status_code_mapping',
+                JSON.stringify(STATUS_CODE_MAPPING_EXAMPLE, null, 2),
+              );
+            }}
+          >
+            {t('填入模板')}
+          </Typography.Text>
         </Spin>
         <ImagePreview
           src={modalImageUrl}
           visible={isModalOpenurl}
           onVisibleChange={(visible) => setIsModalOpenurl(visible)}
         />
-        <Modal
-          title={t('选择模型')}
-          visible={showModelPicker}
-          onCancel={() => setShowModelPicker(false)}
-          onOk={() => {
-            handleInputChange(
-              'models',
-              Array.from(new Set([...inputs.models, ...selectedModels])),
-            );
-            setShowModelPicker(false);
-          }}
-          maskClosable={false}
-          style={{ width: isMobile() ? '90%' : 500 }}
-        >
-          <Input
-            prefix={<IconSearch />}
-            placeholder={t('搜索模型名称')}
-            value={modelSearchKeyword}
-            onChange={(v) => setModelSearchKeyword(v)}
-            style={{ marginBottom: 12 }}
-          />
-          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-            {fetchedModels
-              .filter((m) =>
-                m.toLowerCase().includes(modelSearchKeyword.toLowerCase()),
-              )
-              .map((model) => (
-                <div key={model} style={{ marginBottom: 8 }}>
-                  <Checkbox
-                    checked={selectedModels.includes(model)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedModels([...selectedModels, model]);
-                      } else {
-                        setSelectedModels(
-                          selectedModels.filter((m) => m !== model),
-                        );
-                      }
-                    }}
-                  >
-                    {model}
-                  </Checkbox>
-                </div>
-              ))}
-          </div>
-        </Modal>
       </SideSheet>
     </>
   );

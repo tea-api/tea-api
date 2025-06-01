@@ -3,9 +3,9 @@ package model
 import (
 	"context"
 	"fmt"
+	"tea-api/common"
 	"os"
 	"strings"
-	"tea-api/common"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -113,17 +113,10 @@ func RecordErrorLog(c *gin.Context, userId int, channelId int, modelName string,
 		Group:            group,
 		Other:            otherStr,
 	}
-
-	// 使用goroutine异步记录日志，避免阻塞主流程
-	gopool.Go(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		err := LOG_DB.WithContext(ctx).Create(log).Error
-		if err != nil {
-			common.LogError(c, "failed to record log: "+err.Error())
-		}
-	})
+	err := LOG_DB.Create(log).Error
+	if err != nil {
+		common.LogError(c, "failed to record log: "+err.Error())
+	}
 }
 
 func RecordConsumeLog(c *gin.Context, userId int, channelId int, promptTokens int, completionTokens int,
@@ -153,21 +146,15 @@ func RecordConsumeLog(c *gin.Context, userId int, channelId int, promptTokens in
 		Group:            group,
 		Other:            otherStr,
 	}
-
-	// 使用goroutine异步记录日志，避免阻塞主流程
-	gopool.Go(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		err := LOG_DB.WithContext(ctx).Create(log).Error
-		if err != nil {
-			common.LogError(c, "failed to record log: "+err.Error())
-		}
-
-		if common.DataExportEnabled {
+	err := LOG_DB.Create(log).Error
+	if err != nil {
+		common.LogError(c, "failed to record log: "+err.Error())
+	}
+	if common.DataExportEnabled {
+		gopool.Go(func() {
 			LogQuotaData(userId, username, modelName, quota, common.GetTimestamp(), promptTokens+completionTokens)
-		}
-	})
+		})
+	}
 }
 
 func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, startIdx int, num int, channel int, group string) (logs []*Log, total int64, err error) {

@@ -96,17 +96,6 @@ const RedemptionsTable = () => {
       },
     },
     {
-      title: t('每用户最多使用次数'),
-      dataIndex: 'max_user_times',
-      render: (text, record) => {
-        return (
-          <Popover content={t('每个用户最多可使用该兑换码的次数')} position='top'>
-            <div>{text}</div>
-          </Popover>
-        );
-      },
-    },
-    {
       title: t('已使用次数'),
       dataIndex: 'used_times',
     },
@@ -430,13 +419,6 @@ const RedemptionsTable = () => {
               initValue={1}
               min={1}
             />
-            <Form.InputNumber 
-              field="maxUserTimes" 
-              label={t('每用户最多使用次数')} 
-              placeholder={t('每个用户最多可使用该兑换码的次数')} 
-              initValue={1}
-              min={1}
-            />
           </Form>
         </div>
       ),
@@ -452,7 +434,6 @@ const RedemptionsTable = () => {
           count: values.count || 10,
           quota: values.quota || 100000,
           max_times: values.maxTimes || 1,
-          max_user_times: values.maxUserTimes || 1,
           expired_time: -1
         });
         const { success, message, data } = res.data;

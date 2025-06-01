@@ -18,6 +18,8 @@ const Checkin = () => {
   const [maxDays, setMaxDays] = useState(7);
   const [animate, setAnimate] = useState(false);
   const [specialRewards, setSpecialRewards] = useState([]);
+  const [weeklyBonus, setWeeklyBonus] = useState(0);
+  const [monthlyBonus, setMonthlyBonus] = useState(0);
   const [specialDays, setSpecialDays] = useState([]);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ const Checkin = () => {
           const { data } = configRes.data;
           // 检查签到功能是否启用
           if (!data.checkin_enabled) {
-            showError(t('签到功能未启用，请联系管理员'));
+            showError('签到功能未启用，请联系管理员');
             setLoading(false);
             return;
           }
@@ -38,6 +40,8 @@ const Checkin = () => {
             setBaseReward(data.checkin_config.base_reward || 10000);
             setContinuousReward(data.checkin_config.continuous_reward || 1000);
             setMaxDays(data.checkin_config.max_days || 7);
+            setWeeklyBonus(data.checkin_config.weekly_bonus || 20000);
+            setMonthlyBonus(data.checkin_config.monthly_bonus || 50000);
             
             // 设置特殊日期奖励
             if (data.checkin_config.special_rewards) {
@@ -83,11 +87,11 @@ const Checkin = () => {
         setDone(true);
         setAnimate(true);
         
-        let rewardMessage = `${t('今日获得')} ${data.reward.toLocaleString()} ${t('配额奖励')}`;
+        let rewardMessage = t('签到成功') + `，获得 ${data.reward.toLocaleString()} 配额`;
         if (data.special_reward) {
-          rewardMessage += t('额外获得{{name}}奖励！', { name: data.special_reward.name });
+          rewardMessage += `，额外获得${data.special_reward.name}奖励！`;
         }
-        showSuccess(t('签到成功') + '，' + rewardMessage);
+        showSuccess(rewardMessage);
         
         // 3秒后停止动画
         setTimeout(() => {
@@ -155,7 +159,7 @@ const Checkin = () => {
           <div className="checkin-status">
             {days !== null && (
               <Text strong className="checkin-days">
-                {t('已连续签到')} <span className="highlight">{days}</span> {t('天')}
+                已连续签到 <span className="highlight">{days}</span> 天
               </Text>
             )}
             
@@ -163,7 +167,7 @@ const Checkin = () => {
               <div className={`reward-container ${animate ? 'animate' : ''}`}>
                 <IconGift size="large" />
                 <Text className="reward-text">
-                  {t('今日获得')} <span className="highlight">{formatQuota(reward)}</span> {t('配额奖励')}
+                  今日获得 <span className="highlight">{formatQuota(reward)}</span> 配额奖励
                 </Text>
               </div>
             )}
@@ -183,29 +187,38 @@ const Checkin = () => {
           <Card className="reward-rules">
             <Title heading={6} style={{ marginBottom: '12px' }}>
               <IconGift style={{ marginRight: '8px' }} />
-              {t('签到奖励规则')}
+              签到奖励规则
             </Title>
             <Space vertical>
-              <Text>1. {t('基础签到奖励')} <span className="highlight">{formatQuota(baseReward)}</span></Text>
-              <Text>2. {t('连续签到额外奖励')} <span className="highlight">{formatQuota(continuousReward)}</span></Text>
-              <Text>3. {t('最大连续奖励天数')} <span className="highlight">{maxDays}</span></Text>
-              <Text>4. {t('中断签到重置连续计数')}</Text>
+              <Text>1. 基础奖励：每次签到获得 <span className="highlight">{formatQuota(baseReward)}</span> 配额</Text>
+              <Text>2. 连续签到：连续签到每天额外奖励 <span className="highlight">{formatQuota(continuousReward)}</span> 配额</Text>
+              <Text>3. 最大累计：连续签到奖励最多累计 <span className="highlight">{maxDays}</span> 天</Text>
+              <Text>4. 中断计算：如果中断签到，连续天数将重新计算</Text>
               
               <div className="special-rewards-section">
                 <Text strong style={{ display: 'flex', alignItems: 'center' }}>
                   <IconCrown style={{ marginRight: '8px', color: '#FF9500' }} />
-                  {t('特殊奖励')}
+                  特殊奖励
                 </Text>
                 <div className="special-rewards-list">
+                  <div className="special-reward-item">
+                    <Tag color="blue" size="large">周奖励</Tag>
+                    <Text>连续签到7天可获得额外 <span className="highlight">{formatQuota(weeklyBonus)}</span> 配额</Text>
+                  </div>
+                  <div className="special-reward-item">
+                    <Tag color="purple" size="large">月奖励</Tag>
+                    <Text>连续签到30天可获得额外 <span className="highlight">{formatQuota(monthlyBonus)}</span> 配额</Text>
+                  </div>
+                  
                   {specialRewards.length > 0 && specialRewards.map((reward, index) => (
                     <div key={index} className="special-reward-item">
                       <Tag color="orange" size="large">
-                        {t(reward.name)}
-                        <Tooltip content={t(reward.description)}>
+                        {reward.name}
+                        <Tooltip content={reward.description}>
                           <IconHelpCircle style={{ marginLeft: '4px' }} />
                         </Tooltip>
                       </Tag>
-                      <Text>{t(reward.description)} <span className="highlight">{formatQuota(reward.reward)}</span> {t('配额')}</Text>
+                      <Text>{reward.description}</Text>
                     </div>
                   ))}
                 </div>

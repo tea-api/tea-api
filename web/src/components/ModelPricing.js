@@ -13,8 +13,6 @@ import {
   Tooltip,
   Popover,
   ImagePreview,
-  RadioGroup,
-  Radio,
   Button,
 } from '@douyinfe/semi-ui';
 import {
@@ -22,10 +20,8 @@ import {
   IconVerify,
   IconUploadError,
   IconHelpCircle,
-  IconEdit,
 } from '@douyinfe/semi-icons';
 import { UserContext } from '../context/User/index.js';
-import { isAdmin } from '../helpers/utils.js';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 
 const ModelPricing = () => {
@@ -36,11 +32,6 @@ const ModelPricing = () => {
   const [modalImageUrl, setModalImageUrl] = useState('');
   const [isModalOpenurl, setIsModalOpenurl] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState('default');
-  const [editVisible, setEditVisible] = useState(false);
-  const [editModel, setEditModel] = useState(null);
-  const [inputPrice, setInputPrice] = useState('');
-  const [outputPrice, setOutputPrice] = useState('');
-  const [priceUnit, setPriceUnit] = useState('1m');
 
   const rowSelection = useMemo(
     () => ({
@@ -67,72 +58,6 @@ const ModelPricing = () => {
     const value = event.target.value;
     const newFilteredValue = value ? [value] : [];
     setFilteredValue(newFilteredValue);
-  };
-
-  const openEdit = (record) => {
-    // 先设置单位为默认值
-    setPriceUnit('1m');
-    
-    // 使用与后端一致的基准价格计算方式
-    const basePerM = 2.0;
-    
-    // 根据模型类型设置初始价格
-    if (record.quota_type === 0) {
-      // 按量计费模型
-      // 显示每1M tokens的价格
-      setInputPrice((record.model_ratio * basePerM).toFixed(3));
-      setOutputPrice((record.model_ratio * record.completion_ratio * basePerM).toFixed(3));
-    } else {
-      // 按次计费模型
-      setInputPrice(record.model_price.toFixed(3));
-      setOutputPrice('0');
-    }
-    
-    setEditModel(record);
-    setEditVisible(true);
-  };
-
-  const savePrice = async () => {
-    if (!editModel) return;
-    
-    try {
-      // 更新模型价格
-      console.log(`准备更新模型 ${editModel.model_name} 的价格，输入价格: ${inputPrice}，输出价格: ${outputPrice}`);
-      
-      const res = await API.put('/api/pricing', {
-        model_name: editModel.model_name,
-        input_price: parseFloat(inputPrice),
-        output_price: parseFloat(outputPrice),
-        unit: priceUnit,
-      });
-      
-      console.log('后端返回结果:', res.data);
-      
-      if (res.data.success) {
-        // 使用后端返回的补全倍率
-        if (editModel.quota_type === 0 && res.data.completion_ratio !== undefined) {
-          const completionRatio = res.data.completion_ratio;
-          console.log(`后端返回的补全倍率: ${completionRatio}`);
-          showSuccess(t('保存成功，补全倍率已设为: {{ratio}}', { 
-            ratio: completionRatio.toFixed(3) 
-          }));
-        } else {
-          console.log('未获取到后端返回的补全倍率或非按量计费模型');
-          showSuccess(t('保存成功'));
-        }
-        
-        setEditVisible(false);
-        // 刷新数据，但不重新加载页面
-        console.log('开始刷新数据...');
-        await refresh();
-        console.log('数据刷新完成');
-      } else {
-        showError(res.data.message || t('保存失败'));
-      }
-    } catch (error) {
-      console.error('保存价格时出错:', error);
-      showError(t('保存价格失败，请稍后重试'));
-    }
   };
 
   function renderQuotaType(type) {
@@ -320,51 +245,35 @@ const ModelPricing = () => {
       render: (text, record, index) => {
         let content = text;
         if (record.quota_type === 0) {
-          // 按量计费模型
-          // 使用与后端一致的基准价格计算方式 - 1倍率=0.002刀
-          const basePerM = 2.0;
-          const base = basePerM / 1000; // 转换为每千 tokens 的价格
-          
-          let inputRatioPrice = record.model_ratio * base * groupRatio[selectedGroup];
-          let completionRatioPrice = record.model_ratio * record.completion_ratio * base * groupRatio[selectedGroup];
-          
-          // 显示为每1M tokens的价格
-          let inputRatioPricePerM = inputRatioPrice * 1000;
-          let completionRatioPricePerM = completionRatioPrice * 1000;
-          
+          // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
+          let inputRatioPrice =
+            record.model_ratio * 2 * groupRatio[selectedGroup];
+          let completionRatioPrice =
+            record.model_ratio *
+            record.completion_ratio *
+            2 *
+            groupRatio[selectedGroup];
           content = (
             <>
               <Text>
-                {t('提示')} ${inputRatioPricePerM.toFixed(3)} / 1M tokens
+                {t('提示')} ${inputRatioPrice} / 1M tokens
               </Text>
               <br />
               <Text>
-                {t('补全')} ${completionRatioPricePerM.toFixed(3)} / 1M tokens
+                {t('补全')} ${completionRatioPrice} / 1M tokens
               </Text>
             </>
           );
         } else {
-          // 按次计费模型
           let price = parseFloat(text) * groupRatio[selectedGroup];
           content = (
             <>
-              {t('模型价格')}：${price.toFixed(3)}
+              ${t('模型价格')}：${price}
             </>
           );
         }
         return <div>{content}</div>;
       },
-    },
-    {
-      title: t('编辑价格'),
-      dataIndex: 'action',
-      render: (text, record) => (
-        isAdmin() && (
-          <Space>
-            <Button icon={<IconEdit />} onClick={() => openEdit(record)} />
-          </Space>
-        )
-      ),
     },
   ];
 
@@ -403,67 +312,24 @@ const ModelPricing = () => {
 
   const loadPricing = async () => {
     setLoading(true);
-    console.log('开始加载价格数据...');
 
-    // 添加时间戳参数避免缓存
-    const timestamp = new Date().getTime();
-    let url = `/api/pricing?t=${timestamp}`;
-    
-    try {
-      // 使用no-cache确保不使用缓存
-      const res = await API.get(url, {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      const { success, message, data, group_ratio, usable_group } = res.data;
-      if (success) {
-        console.log('价格数据加载成功，模型数量:', data.length);
-        setGroupRatio(group_ratio);
-        setUsableGroup(usable_group);
-        setSelectedGroup(userState.user ? userState.user.group : 'default');
-        
-        // 打印一些关键模型的补全倍率，用于调试
-        if (data.length > 0) {
-          const sampleModels = data.slice(0, Math.min(3, data.length));
-          console.log('示例模型补全倍率:', sampleModels.map(m => ({ 
-            name: m.model_name, 
-            ratio: m.model_ratio,
-            completionRatio: m.completion_ratio 
-          })));
-          
-          // 如果存在刚刚编辑的模型，打印其信息
-          if (editModel) {
-            const editedModel = data.find(m => m.model_name === editModel.model_name);
-            if (editedModel) {
-              console.log('刚编辑的模型最新信息:', {
-                name: editedModel.model_name,
-                ratio: editedModel.model_ratio,
-                completionRatio: editedModel.completion_ratio
-              });
-            }
-          }
-        }
-        
-        setModelsFormat(data, group_ratio);
-      } else {
-        showError(message);
-        console.error('加载价格数据失败:', message);
-      }
-    } catch (error) {
-      console.error('加载价格数据出错:', error);
-      showError(t('加载价格数据失败'));
+    let url = '';
+    url = `/api/pricing`;
+    const res = await API.get(url);
+    const { success, message, data, group_ratio, usable_group } = res.data;
+    if (success) {
+      setGroupRatio(group_ratio);
+      setUsableGroup(usable_group);
+      setSelectedGroup(userState.user ? userState.user.group : 'default');
+      setModelsFormat(data, group_ratio);
+    } else {
+      showError(message);
     }
-    
     setLoading(false);
   };
 
   const refresh = async () => {
-    console.log('执行刷新操作...');
-    // 强制清除浏览器缓存
     await loadPricing();
-    console.log('刷新完成');
   };
 
   const copyText = async (text) => {
@@ -478,64 +344,6 @@ const ModelPricing = () => {
   useEffect(() => {
     refresh().then();
   }, []);
-
-  // 处理输入价格变化
-  const handleInputPriceChange = (value) => {
-    setInputPrice(value);
-    // 实时更新Banner显示的补全倍率
-    updateCompletionRatioBanner(value, outputPrice);
-  };
-  
-  // 处理输出价格变化
-  const handleOutputPriceChange = (value) => {
-    setOutputPrice(value);
-    // 实时更新Banner显示的补全倍率
-    updateCompletionRatioBanner(inputPrice, value);
-  };
-  
-  // 更新补全倍率显示
-  const updateCompletionRatioBanner = (input, output) => {
-    const inputVal = parseFloat(input);
-    const outputVal = parseFloat(output);
-    
-    if (!isNaN(inputVal) && !isNaN(outputVal) && inputVal > 0) {
-      const ratio = outputVal / inputVal;
-      console.log('实时计算的补全倍率:', ratio.toFixed(3));
-    }
-  };
-
-  // 处理单位切换
-  const handleUnitChange = (value) => {
-    if (!editModel) return;
-    
-    const oldUnit = priceUnit;
-    const newUnit = value;
-    
-    // 如果单位不同，需要转换价格
-    if (oldUnit !== newUnit) {
-      const currentInputPrice = parseFloat(inputPrice);
-      const currentOutputPrice = parseFloat(outputPrice);
-      
-      let newInputPrice, newOutputPrice;
-      
-      if (oldUnit === '1k' && newUnit === '1m') {
-        // 从1k转换到1M，价格乘以1000
-        newInputPrice = (currentInputPrice * 1000).toFixed(3);
-        newOutputPrice = (currentOutputPrice * 1000).toFixed(3);
-      } else if (oldUnit === '1m' && newUnit === '1k') {
-        // 从1M转换到1k，价格除以1000
-        newInputPrice = (currentInputPrice / 1000).toFixed(3);
-        newOutputPrice = (currentOutputPrice / 1000).toFixed(3);
-      }
-      
-      setInputPrice(newInputPrice);
-      setOutputPrice(newOutputPrice);
-      
-      // 保留计算逻辑，但删除showInfo
-    }
-    
-    setPriceUnit(value);
-  };
 
   return (
     <>
@@ -612,35 +420,6 @@ const ModelPricing = () => {
           }}
           rowSelection={rowSelection}
         />
-        <Modal
-          visible={editVisible}
-          title={t('编辑价格')}
-          onOk={savePrice}
-          onCancel={() => setEditVisible(false)}
-        >
-          <RadioGroup
-            type='button'
-            value={priceUnit}
-            onChange={(e) => handleUnitChange(e.target.value)}
-            style={{ marginBottom: 12 }}
-          >
-            <Radio value='1k'>/1k tokens</Radio>
-            <Radio value='1m'>/1M tokens</Radio>
-          </RadioGroup>
-          <Input
-            value={inputPrice}
-            onChange={handleInputPriceChange}
-            suffix={`$/1${priceUnit === '1k' ? 'k' : 'M'} tokens`}
-            label={t('实际输入价格')}
-          />
-          <Input
-            value={outputPrice}
-            onChange={handleOutputPriceChange}
-            suffix={`$/1${priceUnit === '1k' ? 'k' : 'M'} tokens`}
-            label={t('实际输出价格')}
-            style={{ marginTop: 12 }}
-          />
-        </Modal>
         <ImagePreview
           src={modalImageUrl}
           visible={isModalOpenurl}

@@ -1,10 +1,9 @@
 package model
 
 import (
-	"strconv"
-	"sync"
 	"tea-api/common"
 	"tea-api/setting/operation_setting"
+	"sync"
 	"time"
 )
 
@@ -45,17 +44,6 @@ func GetPricing() []Pricing {
 	return pricingMap
 }
 
-// ClearPricingCache 清除价格缓存，强制下次获取时重新加载
-func ClearPricingCache() {
-	updatePricingLock.Lock()
-	defer updatePricingLock.Unlock()
-
-	// 重置缓存时间，强制下次获取时更新
-	lastGetPricingTime = time.Time{}
-	// 清空缓存数据
-	pricingMap = nil
-}
-
 func updatePricing() {
 	//modelRatios := common.GetModelRatios()
 	enableAbilities := GetAllEnableAbilities()
@@ -71,15 +59,6 @@ func updatePricing() {
 		modelGroupsMap[ability.Model] = groups
 	}
 
-	common.SysLog("开始更新价格信息...")
-
-	// 获取当前的补全倍率映射，用于调试
-	compRatioMap := operation_setting.GetCompletionRatioMap()
-	common.SysLog("当前内存中的补全倍率映射:")
-	for model, ratio := range compRatioMap {
-		common.SysLog("模型: " + model + ", 补全倍率: " + strconv.FormatFloat(ratio, 'f', 3, 64))
-	}
-
 	pricingMap = make([]Pricing, 0)
 	for model, groups := range modelGroupsMap {
 		pricing := Pricing{
@@ -93,21 +72,10 @@ func updatePricing() {
 		} else {
 			modelRatio, _ := operation_setting.GetModelRatio(model)
 			pricing.ModelRatio = modelRatio
-
-			// 直接从补全倍率映射中获取，避免硬编码覆盖
-			if ratio, ok := compRatioMap[model]; ok {
-				pricing.CompletionRatio = ratio
-				common.SysLog("使用自定义补全倍率 - 模型: " + model + ", 补全倍率: " + strconv.FormatFloat(ratio, 'f', 3, 64))
-			} else {
-				pricing.CompletionRatio = operation_setting.GetCompletionRatio(model)
-				common.SysLog("使用默认补全倍率 - 模型: " + model + ", 补全倍率: " + strconv.FormatFloat(pricing.CompletionRatio, 'f', 3, 64))
-			}
-
+			pricing.CompletionRatio = operation_setting.GetCompletionRatio(model)
 			pricing.QuotaType = 0
 		}
 		pricingMap = append(pricingMap, pricing)
 	}
 	lastGetPricingTime = time.Now()
-
-	common.SysLog("价格信息更新完成，共 " + strconv.Itoa(len(pricingMap)) + " 个模型")
 }

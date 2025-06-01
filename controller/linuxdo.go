@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
-	"strings"
 	"tea-api/common"
 	"tea-api/model"
-	"tea-api/setting/system_setting"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -244,39 +243,12 @@ func LinuxdoOAuth(c *gin.Context) {
 				inviterId, _ = model.GetUserIdByAffCode(affCode.(string))
 			}
 
-			// 注册用户
 			if err := user.Insert(inviterId); err != nil {
 				c.JSON(http.StatusOK, gin.H{
 					"success": false,
 					"message": err.Error(),
 				})
 				return
-			}
-
-			// 检查并应用L站信任等级奖励
-			trustLevelSettings := system_setting.GetLinuxDOTrustLevelSettings()
-			if trustLevelSettings.Enabled && user.Id > 0 {
-				var extraQuota int
-				switch linuxdoUser.TrustLevel {
-				case 0:
-					extraQuota = trustLevelSettings.TrustLevel0
-				case 1:
-					extraQuota = trustLevelSettings.TrustLevel1
-				case 2:
-					extraQuota = trustLevelSettings.TrustLevel2
-				case 3:
-					extraQuota = trustLevelSettings.TrustLevel3
-				case 4:
-					extraQuota = trustLevelSettings.TrustLevel4
-				}
-
-				if extraQuota > 0 {
-					err = model.IncreaseUserQuota(user.Id, extraQuota, true)
-					if err == nil {
-						model.RecordLog(user.Id, model.LogTypeSystem, fmt.Sprintf("L站信任等级%d额外赠送 %s",
-							linuxdoUser.TrustLevel, common.LogQuota(extraQuota)))
-					}
-				}
 			}
 		} else {
 			c.JSON(http.StatusOK, gin.H{

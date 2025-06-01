@@ -4,29 +4,27 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"tea-api/common"
 	"tea-api/dto"
-	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
 
 func SetEventStreamHeaders(c *gin.Context) {
-	// 检查是否已经设置过头部
-	if _, exists := c.Get("event_stream_headers_set"); exists {
-		return
-	}
-
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
-	c.Writer.Header().Set("Cache-Control", "no-cache")
-	c.Writer.Header().Set("Connection", "keep-alive")
-	c.Writer.Header().Set("Transfer-Encoding", "chunked")
-	c.Writer.Header().Set("X-Accel-Buffering", "no")
-
-	// 设置标志，表示头部已经设置过
-	c.Set("event_stream_headers_set", true)
+    // 检查是否已经设置过头部
+    if _, exists := c.Get("event_stream_headers_set"); exists {
+        return
+    }
+    
+    c.Writer.Header().Set("Content-Type", "text/event-stream")
+    c.Writer.Header().Set("Cache-Control", "no-cache")
+    c.Writer.Header().Set("Connection", "keep-alive")
+    c.Writer.Header().Set("Transfer-Encoding", "chunked")
+    c.Writer.Header().Set("X-Accel-Buffering", "no")
+    
+    // 设置标志，表示头部已经设置过
+    c.Set("event_stream_headers_set", true)
 }
 
 func ClaudeData(c *gin.Context, resp dto.ClaudeResponse) error {
@@ -103,51 +101,21 @@ func WssString(c *gin.Context, ws *websocket.Conn, str string) error {
 		common.LogError(c, "websocket connection is nil")
 		return errors.New("websocket connection is nil")
 	}
-
-	// 更新写入超时
-	ws.SetWriteDeadline(time.Now().Add(30 * time.Second))
-
-	// 使用文本消息类型(1)发送
-	err := ws.WriteMessage(1, []byte(str))
-	if err != nil {
-		common.LogError(c, fmt.Sprintf("发送WebSocket消息失败: %s", err.Error()))
-		return fmt.Errorf("发送WebSocket消息失败: %w", err)
-	}
-
-	if common.DebugEnabled {
-		common.LogInfo(c, fmt.Sprintf("WebSocket消息发送成功, 长度: %d字节", len(str)))
-	}
-
-	return nil
+	//common.LogInfo(c, fmt.Sprintf("sending message: %s", str))
+	return ws.WriteMessage(1, []byte(str))
 }
 
 func WssObject(c *gin.Context, ws *websocket.Conn, object interface{}) error {
 	jsonData, err := json.Marshal(object)
 	if err != nil {
-		common.LogError(c, fmt.Sprintf("序列化对象失败: %s", err.Error()))
 		return fmt.Errorf("error marshalling object: %w", err)
 	}
-
 	if ws == nil {
 		common.LogError(c, "websocket connection is nil")
 		return errors.New("websocket connection is nil")
 	}
-
-	// 更新写入超时
-	ws.SetWriteDeadline(time.Now().Add(30 * time.Second))
-
-	// 使用文本消息类型(1)发送
-	err = ws.WriteMessage(1, jsonData)
-	if err != nil {
-		common.LogError(c, fmt.Sprintf("发送WebSocket对象失败: %s", err.Error()))
-		return fmt.Errorf("发送WebSocket对象失败: %w", err)
-	}
-
-	if common.DebugEnabled {
-		common.LogInfo(c, fmt.Sprintf("WebSocket对象发送成功, 类型: %T, 长度: %d字节", object, len(jsonData)))
-	}
-
-	return nil
+	//common.LogInfo(c, fmt.Sprintf("sending message: %s", jsonData))
+	return ws.WriteMessage(1, jsonData)
 }
 
 func WssError(c *gin.Context, ws *websocket.Conn, openaiError dto.OpenAIError) {

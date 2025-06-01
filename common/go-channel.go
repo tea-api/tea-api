@@ -12,13 +12,8 @@ func SafeSendBool(ch chan bool, value bool) (closed bool) {
 		}
 	}()
 
-	// 使用非阻塞方式发送，避免阻塞导致数据流中断
-	select {
-	case ch <- value:
-		// 成功发送
-	default:
-		// 通道已满，不阻塞
-	}
+	// This will panic if the channel is closed.
+	ch <- value
 
 	// If the code reaches here, then the channel was not closed.
 	return false
@@ -32,13 +27,8 @@ func SafeSendString(ch chan string, value string) (closed bool) {
 		}
 	}()
 
-	// 使用非阻塞方式发送，避免阻塞导致数据流中断
-	select {
-	case ch <- value:
-		// 成功发送
-	default:
-		// 通道已满，不阻塞
-	}
+	// This will panic if the channel is closed.
+	ch <- value
 
 	// If the code reaches here, then the channel was not closed.
 	return false
