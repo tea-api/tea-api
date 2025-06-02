@@ -14,12 +14,17 @@ import {
   Popover,
   ImagePreview,
   Button,
+  Switch,
+  InputNumber,
 } from '@douyinfe/semi-ui';
 import {
   IconMore,
   IconVerify,
   IconUploadError,
   IconHelpCircle,
+  IconEdit,
+  IconSave,
+  IconRefresh,
 } from '@douyinfe/semi-icons';
 import { UserContext } from '../context/User/index.js';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
@@ -32,6 +37,9 @@ const ModelPricing = () => {
   const [modalImageUrl, setModalImageUrl] = useState('');
   const [isModalOpenurl, setIsModalOpenurl] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState('default');
+  const [editMode, setEditMode] = useState(false);
+  const [editedPrices, setEditedPrices] = useState({});
+  const [saving, setSaving] = useState(false);
 
   const rowSelection = useMemo(
     () => ({
@@ -100,6 +108,63 @@ const ModelPricing = () => {
       </Popover>
     ) : null;
   }
+
+  // 价格和倍率转换函数
+  const calculateRatioFromPrice = (pricePerMillion) => {
+    // 1倍率 = $0.002 / 1K tokens = $2 / 1M tokens
+    return pricePerMillion / 2;
+  };
+
+  const calculatePriceFromRatio = (ratio) => {
+    // 倍率 * 2 = $ / 1M tokens
+    return ratio * 2;
+  };
+
+  // 处理价格编辑
+  const handlePriceEdit = (modelName, field, value) => {
+    const numValue = parseFloat(value) || 0;
+    setEditedPrices(prev => ({
+      ...prev,
+      [modelName]: {
+        ...prev[modelName],
+        [field]: numValue
+      }
+    }));
+  };
+
+  // 获取编辑后的价格，如果没有编辑则返回原始计算值
+  const getEditedPrice = (record, field) => {
+    const editedModel = editedPrices[record.model_name];
+    if (editedModel && editedModel[field] !== undefined) {
+      return editedModel[field];
+    }
+
+    // 返回原始计算值
+    if (record.quota_type === 0) {
+      const basePrice = record.model_ratio * 2 * groupRatio[selectedGroup];
+      if (field === 'inputPrice') {
+        return parseFloat(basePrice.toFixed(6));
+      } else if (field === 'outputPrice') {
+        return parseFloat((basePrice * record.completion_ratio).toFixed(6));
+      }
+    }
+    return 0;
+  };
+
+  // 初始化编辑价格（当切换到编辑模式时）
+  const initializeEditPrices = () => {
+    const initialPrices = {};
+    models.forEach(model => {
+      if (model.quota_type === 0) { // 只对按量计费的模型初始化
+        const basePrice = model.model_ratio * 2 * groupRatio[selectedGroup];
+        initialPrices[model.model_name] = {
+          inputPrice: parseFloat(basePrice.toFixed(6)),
+          outputPrice: parseFloat((basePrice * model.completion_ratio).toFixed(6))
+        };
+      }
+    });
+    setEditedPrices(initialPrices);
+  };
 
   const columns = [
     {
@@ -243,36 +308,83 @@ const ModelPricing = () => {
       title: t('模型价格'),
       dataIndex: 'model_price',
       render: (text, record, index) => {
-        let content = text;
         if (record.quota_type === 0) {
-          // 这里的 *2 是因为 1倍率=0.002刀，请勿删除
-          let inputRatioPrice =
-            record.model_ratio * 2 * groupRatio[selectedGroup];
-          let completionRatioPrice =
-            record.model_ratio *
-            record.completion_ratio *
-            2 *
-            groupRatio[selectedGroup];
-          content = (
-            <>
-              <Text>
-                {t('提示')} ${inputRatioPrice} / 1M tokens
-              </Text>
-              <br />
-              <Text>
-                {t('补全')} ${completionRatioPrice} / 1M tokens
-              </Text>
-            </>
-          );
+          // 按量计费模型
+          if (editMode) {
+            // 编辑模式
+            const inputPrice = getEditedPrice(record, 'inputPrice');
+            const outputPrice = getEditedPrice(record, 'outputPrice');
+
+            return (
+              <div style={{ minWidth: '200px' }}>
+                <div style={{ marginBottom: '8px' }}>
+                  <Text style={{ display: 'inline-block', width: '50px' }}>
+                    {t('输入')}:
+                  </Text>
+                  <InputNumber
+                    value={inputPrice}
+                    onChange={(value) => handlePriceEdit(record.model_name, 'inputPrice', value)}
+                    style={{ width: '120px' }}
+                    suffix="$/1M"
+                    precision={6}
+                    step={0.001}
+                  />
+                </div>
+                <div>
+                  <Text style={{ display: 'inline-block', width: '50px' }}>
+                    {t('输出')}:
+                  </Text>
+                  <InputNumber
+                    value={outputPrice}
+                    onChange={(value) => handlePriceEdit(record.model_name, 'outputPrice', value)}
+                    style={{ width: '120px' }}
+                    suffix="$/1M"
+                    precision={6}
+                    step={0.001}
+                  />
+                </div>
+                {/* 显示计算后的倍率 */}
+                <div style={{ marginTop: '4px', fontSize: '12px', color: '#666' }}>
+                  <Text>
+                    {t('模型倍率')}: {calculateRatioFromPrice(inputPrice).toFixed(3)}
+                  </Text>
+                  <br />
+                  <Text>
+                    {t('补全倍率')}: {inputPrice > 0 ? (outputPrice / inputPrice).toFixed(3) : '0'}
+                  </Text>
+                </div>
+              </div>
+            );
+          } else {
+            // 查看模式
+            let inputRatioPrice =
+              record.model_ratio * 2 * groupRatio[selectedGroup];
+            let completionRatioPrice =
+              record.model_ratio *
+              record.completion_ratio *
+              2 *
+              groupRatio[selectedGroup];
+            return (
+              <>
+                <Text>
+                  {t('输入')} ${inputRatioPrice.toFixed(6)} / 1M tokens
+                </Text>
+                <br />
+                <Text>
+                  {t('输出')} ${completionRatioPrice.toFixed(6)} / 1M tokens
+                </Text>
+              </>
+            );
+          }
         } else {
+          // 按次计费模型
           let price = parseFloat(text) * groupRatio[selectedGroup];
-          content = (
+          return (
             <>
-              ${t('模型价格')}：${price}
+              <Text>{t('固定价格')}: ${price.toFixed(4)}</Text>
             </>
           );
         }
-        return <div>{content}</div>;
       },
     },
   ];
@@ -341,6 +453,60 @@ const ModelPricing = () => {
     }
   };
 
+  // 保存价格修改
+  const savePriceChanges = async () => {
+    if (Object.keys(editedPrices).length === 0) {
+      showInfo(t('没有需要保存的修改'));
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // 构建要更新的数据
+      const updates = {
+        modelRatios: {},
+        completionRatios: {}
+      };
+
+      Object.entries(editedPrices).forEach(([modelName, prices]) => {
+        if (prices.inputPrice !== undefined) {
+          // 计算模型倍率 (去除分组倍率影响)
+          const modelRatio = calculateRatioFromPrice(prices.inputPrice) / groupRatio[selectedGroup];
+          updates.modelRatios[modelName] = modelRatio;
+        }
+
+        if (prices.outputPrice !== undefined && prices.inputPrice !== undefined && prices.inputPrice > 0) {
+          // 计算补全倍率
+          const completionRatio = prices.outputPrice / prices.inputPrice;
+          updates.completionRatios[modelName] = completionRatio;
+        }
+      });
+
+      // 发送更新请求
+      const res = await API.post('/api/pricing/update', updates);
+      const { success, message } = res.data;
+
+      if (success) {
+        showSuccess(t('价格更新成功'));
+        setEditedPrices({});
+        setEditMode(false);
+        await refresh(); // 重新加载数据
+      } else {
+        showError(message || t('价格更新失败'));
+      }
+    } catch (error) {
+      showError(t('价格更新失败: ') + error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // 取消编辑
+  const cancelEdit = () => {
+    setEditedPrices({});
+    setEditMode(false);
+  };
+
   useEffect(() => {
     refresh().then();
   }, []);
@@ -402,6 +568,44 @@ const ModelPricing = () => {
           >
             {t('复制选中模型')}
           </Button>
+
+          {/* 编辑模式控制 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Text>{t('编辑模式')}:</Text>
+            <Switch
+              checked={editMode}
+              onChange={(checked) => {
+                if (!checked) {
+                  cancelEdit();
+                } else {
+                  setEditMode(true);
+                  initializeEditPrices();
+                }
+              }}
+              disabled={saving}
+            />
+          </div>
+
+          {editMode && (
+            <>
+              <Button
+                type='primary'
+                icon={<IconSave />}
+                onClick={savePriceChanges}
+                loading={saving}
+                disabled={Object.keys(editedPrices).length === 0}
+              >
+                {t('保存修改')}
+              </Button>
+              <Button
+                icon={<IconRefresh />}
+                onClick={cancelEdit}
+                disabled={saving}
+              >
+                {t('取消')}
+              </Button>
+            </>
+          )}
         </Space>
         <Table
           style={{ marginTop: 5 }}

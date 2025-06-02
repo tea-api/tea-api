@@ -368,6 +368,12 @@ func GetDefaultModelRatioMap() map[string]float64 {
 	return defaultModelRatio
 }
 
+func GetModelRatioMap() map[string]float64 {
+	modelRatioMapMutex.RLock()
+	defer modelRatioMapMutex.RUnlock()
+	return modelRatioMap
+}
+
 func GetCompletionRatioMap() map[string]float64 {
 	CompletionRatioMutex.RLock()
 	defer CompletionRatioMutex.RUnlock()
