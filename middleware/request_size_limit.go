@@ -16,12 +16,12 @@ import (
 
 // 请求大小限制配置
 const (
-	MaxRequestBodySize    = 10 * 1024 * 1024 // 10MB 最大请求体大小
-	MaxPromptLength       = 100000           // 最大 Prompt 长度
-	MaxMessagesCount      = 100              // 最大消息数量
-	MaxSingleMessageSize  = 50000            // 单条消息最大大小
-	MaxTokensLimit        = 100000           // 最大 tokens 限制
-	MaxRandomContentRatio = 0.9              // 最大随机内容比例
+	MaxRequestBodySize       = 10 * 1024 * 1024 // 10MB 最大请求体大小
+	MaxPromptLengthLimit     = 100000           // 最大 Prompt 长度
+	MaxMessagesCount         = 100              // 最大消息数量
+	MaxSingleMessageSize     = 50000            // 单条消息最大大小
+	MaxTokensLimit           = 100000           // 最大 tokens 限制
+	MaxRandomContentRatio    = 0.9              // 最大随机内容比例
 )
 
 // RequestSizeLimit 请求大小限制中间件
@@ -108,7 +108,7 @@ func validateRequestContent(body []byte, clientIP string) error {
 	}
 
 	// 检查总 Prompt 长度
-	if totalPromptLength > MaxPromptLength {
+	if totalPromptLength > MaxPromptLengthLimit {
 		common.SysLog(fmt.Sprintf("total prompt too large from %s: %d", clientIP, totalPromptLength))
 		return fmt.Errorf("总 Prompt 长度超过限制: %d 字符", totalPromptLength)
 	}

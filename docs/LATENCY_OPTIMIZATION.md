@@ -31,7 +31,7 @@ transport := &http.Transport{
 ### 2. 流式响应优化
 
 #### 缓冲区策略
-- **动态缓冲区**：首字响应使用小缓冲区，后续扩展
+- **优化缓冲区**：使用适中的缓冲区大小，平衡首字响应和处理效率
 - **立即刷新**：首字响应后立即刷新输出缓冲区
 - **减少延迟**：优化数据处理流程
 
@@ -40,10 +40,7 @@ transport := &http.Transport{
 if !firstTokenSent {
     info.SetFirstResponseTime()
     firstTokenSent = true
-    
-    // 首字响应后扩展缓冲区
-    scanner.Buffer(make([]byte, InitialScannerBufferSize), MaxScannerBufferSize)
-    
+
     // 立即刷新
     if flusher, ok := c.Writer.(http.Flusher); ok {
         flusher.Flush()

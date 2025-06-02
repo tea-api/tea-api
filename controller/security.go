@@ -81,9 +81,8 @@ func UpdateSecurityConfig(c *gin.Context) {
 
 // GetBlacklist 获取IP黑名单
 func GetBlacklist(c *gin.Context) {
-	manager := middleware.GetBlacklistManager()
 	stats := middleware.GetBlacklistStats()
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{

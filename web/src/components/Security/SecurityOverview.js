@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card, Row, Col, Typography, Tag, Progress, Space, Descriptions, Button } from '@douyinfe/semi-ui';
-import { 
-  IconShield, 
-  IconAlertTriangle, 
-  IconLock, 
-  IconMonitor,
+import {
+  IconShield,
+  IconAlertTriangle,
+  IconLock,
+  IconMonitorStroked,
   IconRefresh
 } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
@@ -157,9 +157,9 @@ const SecurityOverview = ({ stats, config, refresh }) => {
         <Col span={6}>
           <Card>
             <div style={{ textAlign: 'center' }}>
-              <IconMonitor 
-                size="large" 
-                style={{ color: '#52c41a', marginBottom: '8px' }} 
+              <IconMonitorStroked
+                size="large"
+                style={{ color: '#52c41a', marginBottom: '8px' }}
               />
               <Title heading={3} style={{ margin: '8px 0' }}>
                 {streamStats.active_connections || 0}

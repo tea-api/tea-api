@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Nav, Card, Typography, Spin } from '@douyinfe/semi-ui';
-import { 
-  IconShield, 
-  IconLock, 
-  IconMonitor, 
+import {
+  IconShield,
+  IconLock,
+  IconMonitorStroked,
   IconAlertTriangle,
-  IconSettings,
+  IconSetting,
   IconList
 } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
@@ -124,20 +124,20 @@ const SecuritySetting = () => {
             selectedKeys={[activeKey]}
             onSelect={({ itemKey }) => handleNavChange(itemKey)}
             items={[
-              { 
-                itemKey: 'overview', 
-                text: t('安全概览'), 
-                icon: <IconMonitor /> 
+              {
+                itemKey: 'overview',
+                text: t('安全概览'),
+                icon: <IconMonitorStroked />
               },
               { 
                 itemKey: 'abnormal', 
                 text: t('异常检测'), 
                 icon: <IconAlertTriangle /> 
               },
-              { 
-                itemKey: 'request', 
-                text: t('请求限制'), 
-                icon: <IconSettings /> 
+              {
+                itemKey: 'request',
+                text: t('请求限制'),
+                icon: <IconSetting />
               },
               { 
                 itemKey: 'stream', 

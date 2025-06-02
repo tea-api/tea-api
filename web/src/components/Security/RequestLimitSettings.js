@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Row, Col, Button, Switch, InputNumber, Typography, Space, Divider } from '@douyinfe/semi-ui';
-import { IconSettings, IconSave } from '@douyinfe/semi-icons';
+import { IconSetting, IconSave } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess } from '../../helpers';
 
@@ -84,7 +84,7 @@ const RequestLimitSettings = ({ config, refresh }) => {
       <Card>
         <div style={{ marginBottom: '24px' }}>
           <Space>
-            <IconSettings size="large" style={{ color: '#1890ff' }} />
+            <IconSetting size="large" style={{ color: '#1890ff' }} />
             <Title heading={4} style={{ margin: 0 }}>
               {t('请求大小限制配置')}
             </Title>
