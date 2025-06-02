@@ -1,6 +1,10 @@
 package setting
 
-import "tea-api/setting/config"
+import (
+	"sync"
+	"time"
+	"tea-api/setting/config"
+)
 
 // SecurityConfig 安全配置
 type SecurityConfig struct {
@@ -227,4 +231,83 @@ func UpdateBlacklistedIPs(count int) {
 // UpdateActiveStreams 更新活跃流数量
 func UpdateActiveStreams(count int) {
 	securityStats.ActiveStreams = count
+}
+
+// SecurityLogEntry 安全日志条目
+type SecurityLogEntry struct {
+	ID        int64                  `json:"id"`
+	Timestamp time.Time              `json:"timestamp"`
+	Type      string                 `json:"type"`
+	IP        string                 `json:"ip"`
+	Message   string                 `json:"message"`
+	Action    string                 `json:"action"`
+	Details   map[string]interface{} `json:"details"`
+}
+
+var securityLogs []SecurityLogEntry
+var logMutex sync.RWMutex
+var logIDCounter int64
+
+// AddSecurityLog 添加安全日志
+func AddSecurityLog(logType, ip, message, action string, details map[string]interface{}) {
+	logMutex.Lock()
+	defer logMutex.Unlock()
+
+	logIDCounter++
+	entry := SecurityLogEntry{
+		ID:        logIDCounter,
+		Timestamp: time.Now(),
+		Type:      logType,
+		IP:        ip,
+		Message:   message,
+		Action:    action,
+		Details:   details,
+	}
+
+	securityLogs = append(securityLogs, entry)
+
+	// 保持最多1000条日志
+	if len(securityLogs) > 1000 {
+		securityLogs = securityLogs[len(securityLogs)-1000:]
+	}
+}
+
+// GetSecurityLogs 获取安全日志
+func GetSecurityLogs(page, limit int, logType, ip string) ([]SecurityLogEntry, int) {
+	logMutex.RLock()
+	defer logMutex.RUnlock()
+
+	// 过滤日志
+	var filteredLogs []SecurityLogEntry
+	for i := len(securityLogs) - 1; i >= 0; i-- {
+		log := securityLogs[i]
+
+		// 类型过滤
+		if logType != "all" && log.Type != logType {
+			continue
+		}
+
+		// IP过滤
+		if ip != "" && log.IP != ip {
+			continue
+		}
+
+		filteredLogs = append(filteredLogs, log)
+	}
+
+	total := len(filteredLogs)
+
+	// 分页
+	start := (page - 1) * limit
+	end := start + limit
+
+	if start >= total {
+		return []SecurityLogEntry{}, total
+	}
+
+	if end > total {
+		end = total
+	}
+
+	return filteredLogs[start:end], total
 }

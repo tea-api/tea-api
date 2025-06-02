@@ -58,20 +58,12 @@ const IPBlacklistSettings = ({ config, refresh }) => {
     try {
       const response = await API.get('/api/security/blacklist');
       if (response.data.success) {
-        // 这里应该返回实际的黑名单数据，目前返回模拟数据
-        setBlacklistData([
-          {
-            ip: '192.168.1.100',
-            reason: 'Token浪费攻击',
-            blocked_at: '2024-01-01T12:00:00Z',
-            expires_at: '2024-01-01T13:00:00Z',
-            violations: 3,
-            is_temporary: true
-          }
-        ]);
+        // 使用真实的黑名单数据
+        setBlacklistData(response.data.data.blacklist || []);
       }
     } catch (error) {
       console.error('Failed to load blacklist data:', error);
+      showError(t('加载黑名单数据失败'));
     }
   };
 

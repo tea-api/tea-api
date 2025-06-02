@@ -61,49 +61,11 @@ const SecurityLogs = () => {
       }
     } catch (error) {
       showError(t('加载安全日志失败'));
-      // 使用模拟数据
-      setLogs([
-        {
-          id: 1,
-          timestamp: '2024-01-01T12:00:00Z',
-          type: 'malicious_detection',
-          ip: '192.168.1.100',
-          message: '检测到token浪费攻击',
-          action: 'blocked',
-          details: {
-            prompt_length: 75000,
-            random_chars: true,
-            stream: true
-          }
-        },
-        {
-          id: 2,
-          timestamp: '2024-01-01T11:55:00Z',
-          type: 'rate_limit',
-          ip: '192.168.1.101',
-          message: '请求频率过高',
-          action: 'rate_limited',
-          details: {
-            requests_per_second: 25
-          }
-        },
-        {
-          id: 3,
-          timestamp: '2024-01-01T11:50:00Z',
-          type: 'ip_blacklist',
-          ip: '192.168.1.102',
-          message: 'IP已加入黑名单',
-          action: 'blacklisted',
-          details: {
-            reason: '恶意攻击',
-            temporary: true
-          }
-        }
-      ]);
+      setLogs([]);
       setPagination({
         current: 1,
         pageSize: 20,
-        total: 3
+        total: 0
       });
     } finally {
       setLoading(false);

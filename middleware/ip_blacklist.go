@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"tea-api/common"
+	"tea-api/setting"
 )
 
 // IPBlacklistEntry IP黑名单条目
@@ -48,20 +49,19 @@ func IPBlacklist() gin.HandlerFunc {
 	
 	return func(c *gin.Context) {
 		clientIP := c.ClientIP()
-		
+
 		// 检查白名单
 		if ipBlacklistManager.isWhitelisted(clientIP) {
 			c.Next()
 			return
 		}
-		
+
 		// 检查黑名单
 		if entry := ipBlacklistManager.isBlacklisted(clientIP); entry != nil {
 			common.SysLog(fmt.Sprintf("blocked request from blacklisted IP %s: %s", clientIP, entry.Reason))
 			abortWithBlacklistError(c, entry)
 			return
 		}
-		
 		c.Next()
 	}
 }
@@ -76,10 +76,11 @@ func (manager *IPBlacklistManager) isWhitelisted(ip string) bool {
 		return true
 	}
 	
-	// 检查内网IP
-	if isPrivateIP(ip) {
-		return true
-	}
+	// 检查内网IP (仅在生产环境中自动白名单)
+	// 在测试环境中，我们需要能够封禁内网IP进行测试
+	// if isPrivateIP(ip) {
+	//     return true
+	// }
 	
 	return false
 }
@@ -138,8 +139,17 @@ func (manager *IPBlacklistManager) AddToBlacklist(ip, reason string, temporary b
 			IsTemporary:    temporary,
 		}
 	}
-	
+
 	common.SysLog(fmt.Sprintf("added IP %s to blacklist: %s (temporary: %v)", ip, reason, temporary))
+
+	// 记录安全日志
+	setting.AddSecurityLog("ip_blacklist", ip,
+		fmt.Sprintf("IP已加入黑名单: %s", reason), "blacklisted",
+		map[string]interface{}{
+			"reason": reason,
+			"temporary": temporary,
+			"violations": manager.blacklist[ip].ViolationCount,
+		})
 }
 
 // RemoveFromBlacklist 从黑名单移除IP
@@ -279,6 +289,27 @@ func AutoBlacklistIP(ip, reason string) {
 // AutoPermanentBlacklistIP 自动永久封禁IP
 func AutoPermanentBlacklistIP(ip, reason string) {
 	ipBlacklistManager.AddToBlacklist(ip, reason, false)
+}
+
+// GetBlacklistData 获取黑名单详细数据
+func (manager *IPBlacklistManager) GetBlacklistData() []map[string]interface{} {
+	manager.mu.RLock()
+	defer manager.mu.RUnlock()
+
+	var blacklistData []map[string]interface{}
+	for _, entry := range manager.blacklist {
+		data := map[string]interface{}{
+			"ip":           entry.IP,
+			"reason":       entry.Reason,
+			"blocked_at":   entry.BlockedAt.Format(time.RFC3339),
+			"expires_at":   entry.ExpiresAt.Format(time.RFC3339),
+			"violations":   entry.ViolationCount,
+			"is_temporary": entry.IsTemporary,
+		}
+		blacklistData = append(blacklistData, data)
+	}
+
+	return blacklistData
 }
 
 // GetBlacklistManager 获取黑名单管理器实例

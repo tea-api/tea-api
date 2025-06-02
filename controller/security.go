@@ -81,13 +81,15 @@ func UpdateSecurityConfig(c *gin.Context) {
 
 // GetBlacklist 获取IP黑名单
 func GetBlacklist(c *gin.Context) {
+	manager := middleware.GetBlacklistManager()
 	stats := middleware.GetBlacklistStats()
+	blacklistData := manager.GetBlacklistData()
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{
 			"stats": stats,
-			"message": "使用管理接口查看详细黑名单信息",
+			"blacklist": blacklistData,
 		},
 	})
 }
@@ -234,49 +236,34 @@ func validateSecurityConfig(config *setting.SecurityConfig) error {
 	return nil
 }
 
-// GetSecurityLogs 获取安全日志（简化版）
+// GetSecurityLogs 获取安全日志
 func GetSecurityLogs(c *gin.Context) {
 	// 获取查询参数
 	pageStr := c.DefaultQuery("page", "1")
 	limitStr := c.DefaultQuery("limit", "50")
 	logType := c.DefaultQuery("type", "all")
-	
+	ip := c.DefaultQuery("ip", "")
+
 	page, _ := strconv.Atoi(pageStr)
 	limit, _ := strconv.Atoi(limitStr)
-	
+
 	if page <= 0 {
 		page = 1
 	}
 	if limit <= 0 || limit > 100 {
 		limit = 50
 	}
-	
-	// 这里应该从日志系统获取实际的安全日志
-	// 目前返回模拟数据
-	logs := []gin.H{
-		{
-			"timestamp": "2024-01-01T12:00:00Z",
-			"type":      "malicious_detection",
-			"ip":        "192.168.1.100",
-			"message":   "检测到token浪费攻击",
-			"action":    "blocked",
-		},
-		{
-			"timestamp": "2024-01-01T11:55:00Z",
-			"type":      "rate_limit",
-			"ip":        "192.168.1.101",
-			"message":   "请求频率过高",
-			"action":    "rate_limited",
-		},
-	}
-	
+
+	// 从安全日志系统获取实际日志
+	logs, total := setting.GetSecurityLogs(page, limit, logType, ip)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{
 			"logs":  logs,
 			"page":  page,
 			"limit": limit,
-			"total": len(logs),
+			"total": total,
 			"type":  logType,
 		},
 	})

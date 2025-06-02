@@ -46,7 +46,8 @@ const (
 
 func AbnormalDetection() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		config := setting.GetAbnormalDetection()
+		securityConfig := setting.GetSecurityConfig()
+		config := securityConfig.AbnormalDetection
 		if !config.Enabled {
 			c.Next()
 			return
@@ -92,19 +93,33 @@ func AbnormalDetection() gin.HandlerFunc {
 		suspiciousScore := calculateSuspiciousScore(metrics, tracker, count)
 		tracker.suspiciousScore += suspiciousScore
 
-		// 高频请求检测
-		if config.Rules.HighFrequency.Enabled &&
-			count > config.Rules.HighFrequency.MaxRequestsPerSecond {
+		// 高频请求检测 - 使用新的配置结构
+		maxRequestsPerSecond := 10 // 默认阈值
+		if count > maxRequestsPerSecond {
 			common.SysLog(fmt.Sprintf("abnormal high frequency from %s: %d req/s", identifier, count))
 			tracker.suspiciousScore += 20
 
-			if config.Security.SleepSeconds > 0 {
-				time.Sleep(time.Duration(config.Security.SleepSeconds) * time.Second)
-			}
+			// 记录安全日志
+			setting.AddSecurityLog("rate_limit", identifier,
+				fmt.Sprintf("高频请求: %d req/s", count), "rate_limited",
+				map[string]interface{}{
+					"requests_per_second": count,
+					"threshold": maxRequestsPerSecond,
+				})
 		}
 
 		// 恶意行为检测
 		if detectMaliciousBehavior(metrics, tracker, identifier) {
+			// 记录安全日志
+			setting.AddSecurityLog("malicious_detection", identifier,
+				"检测到恶意行为：token浪费攻击", "blocked",
+				map[string]interface{}{
+					"prompt_length": metrics.promptLength,
+					"random_chars": metrics.hasRandomChars,
+					"stream": metrics.isStream,
+					"suspicious_score": tracker.suspiciousScore,
+				})
+
 			// 自动加入黑名单
 			AutoBlacklistIP(identifier, "检测到恶意行为：token浪费攻击")
 			abortWithMessage(c, "检测到恶意行为，请求被拒绝")
