@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Row, Col, Button, Switch, InputNumber, Typography, Space, Divider } from '@douyinfe/semi-ui';
+import { Card, Form, Row, Col, Button, Switch, InputNumber, Typography, Space, Divider, Spin } from '@douyinfe/semi-ui';
 import { IconShield, IconSave } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess } from '../../helpers';
@@ -37,7 +37,7 @@ const StreamProtectionSettings = ({ config, refresh }) => {
     setLoading(true);
     try {
       const newConfig = {
-        ...config,
+        ...(config || {}),
         stream_protection: {
           enabled: formData.enabled,
           max_streams_per_ip: formData.max_streams_per_ip,
@@ -70,6 +70,10 @@ const StreamProtectionSettings = ({ config, refresh }) => {
       [field]: value
     }));
   };
+
+  if (!config) {
+    return <Spin spinning />;
+  }
 
   const formatDuration = (seconds) => {
     if (seconds < 60) return `${seconds}秒`;

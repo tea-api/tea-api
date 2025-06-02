@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Row, Col, Button, Switch, InputNumber, Typography, Space, Divider } from '@douyinfe/semi-ui';
+import { Card, Form, Row, Col, Button, Switch, InputNumber, Typography, Space, Divider, Spin } from '@douyinfe/semi-ui';
 import { IconSetting, IconSave } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess } from '../../helpers';
@@ -37,7 +37,7 @@ const RequestLimitSettings = ({ config, refresh }) => {
     setLoading(true);
     try {
       const newConfig = {
-        ...config,
+        ...(config || {}),
         request_size_limit: {
           enabled: formData.enabled,
           max_request_body_size: formData.max_request_body_size,
@@ -70,6 +70,10 @@ const RequestLimitSettings = ({ config, refresh }) => {
       [field]: value
     }));
   };
+
+  if (!config) {
+    return <Spin spinning />;
+  }
 
   const formatBytes = (bytes) => {
     if (bytes === 0) return '0 B';

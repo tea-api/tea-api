@@ -14,7 +14,8 @@ import {
   Input,
   Modal,
   Tag,
-  Popconfirm
+  Popconfirm,
+  Spin
 } from '@douyinfe/semi-ui';
 import { IconLock, IconSave, IconPlus, IconDelete } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
@@ -71,7 +72,7 @@ const IPBlacklistSettings = ({ config, refresh }) => {
     setLoading(true);
     try {
       const newConfig = {
-        ...config,
+        ...(config || {}),
         ip_blacklist: {
           enabled: formData.enabled,
           temp_block_duration_hours: formData.temp_block_duration_hours,
@@ -145,6 +146,10 @@ const IPBlacklistSettings = ({ config, refresh }) => {
       [field]: value
     }));
   };
+
+  if (!config) {
+    return <Spin spinning />;
+  }
 
   const columns = [
     {

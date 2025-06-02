@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Row, Col, Button, Switch, InputNumber, Slider, Typography, Space, Divider } from '@douyinfe/semi-ui';
+import { Card, Form, Row, Col, Button, Switch, InputNumber, Slider, Typography, Space, Divider, Spin } from '@douyinfe/semi-ui';
 import { IconAlertTriangle, IconSave } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess, showWarning } from '../../helpers';
@@ -39,7 +39,7 @@ const AbnormalDetectionSettings = ({ config, refresh }) => {
     setLoading(true);
     try {
       const newConfig = {
-        ...config,
+        ...(config || {}),
         abnormal_detection: {
           enabled: formData.enabled,
           max_prompt_length: formData.max_prompt_length,
@@ -73,6 +73,10 @@ const AbnormalDetectionSettings = ({ config, refresh }) => {
       [field]: value
     }));
   };
+
+  if (!config) {
+    return <Spin spinning />;
+  }
 
   return (
     <div>
