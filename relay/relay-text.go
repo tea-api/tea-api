@@ -214,6 +214,7 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 	resp, err := adaptor.DoRequest(c, relayInfo, requestBody)
 
 	if err != nil {
+		common.LogError(c, fmt.Sprintf("上游请求失败: %v", err))
 		return service.OpenAIErrorWrapper(err, "do_request_failed", http.StatusInternalServerError)
 	}
 
@@ -221,13 +222,18 @@ func TextHelper(c *gin.Context) (openaiErr *dto.OpenAIErrorWithStatusCode) {
 
 	if resp != nil {
 		httpResp = resp.(*http.Response)
+		common.LogInfo(c, fmt.Sprintf("上游响应状态: %d, Content-Type: %s", httpResp.StatusCode, httpResp.Header.Get("Content-Type")))
 		relayInfo.IsStream = relayInfo.IsStream || strings.HasPrefix(httpResp.Header.Get("Content-Type"), "text/event-stream")
 		if httpResp.StatusCode != http.StatusOK {
+			common.LogError(c, fmt.Sprintf("上游响应状态码异常: %d", httpResp.StatusCode))
 			openaiErr = service.RelayErrorHandler(httpResp, false)
 			// reset status code 重置状态码
 			service.ResetStatusCode(openaiErr, statusCodeMappingStr)
 			return openaiErr
 		}
+	} else {
+		common.LogError(c, "上游响应为空")
+		return service.OpenAIErrorWrapper(fmt.Errorf("empty upstream response"), "empty_upstream_response", http.StatusInternalServerError)
 	}
 
 	usage, openaiErr := adaptor.DoResponse(c, httpResp, relayInfo)

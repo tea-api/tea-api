@@ -23,6 +23,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// 辅助函数：返回两个整数中的较小值
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, forceFormat bool, thinkToContent bool) error {
 	if data == "" {
 		return nil
@@ -106,9 +114,12 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 
 func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (*dto.OpenAIErrorWithStatusCode, *dto.Usage) {
 	if resp == nil || resp.Body == nil {
-		common.LogError(c, "invalid response or response body")
+		common.LogError(c, "流式响应无效: resp或resp.Body为nil")
 		return service.OpenAIErrorWrapper(fmt.Errorf("invalid response"), "invalid_response", http.StatusInternalServerError), nil
 	}
+
+	// 添加调试日志：记录流式响应开始
+	common.LogInfo(c, fmt.Sprintf("开始处理流式响应, Content-Type: %s, Status: %d", resp.Header.Get("Content-Type"), resp.StatusCode))
 
 	containStreamUsage := false
 	var responseId string
@@ -135,15 +146,22 @@ func OaiStreamHandler(c *gin.Context, resp *http.Response, info *relaycommon.Rel
 		lastStreamData string
 	)
 
+	var streamDataCount int
 	helper.StreamScannerHandler(c, resp, info, func(data string) bool {
+		streamDataCount++
+		if common.DebugEnabled && streamDataCount <= 3 {
+			common.LogInfo(c, fmt.Sprintf("流式数据 #%d: %s", streamDataCount, data[:min(100, len(data))]))
+		}
 		err := handleStreamFormat(c, info, data, forceFormat, thinkToContent)
 		if err != nil {
-			common.SysError("error handling stream format: " + err.Error())
+			common.LogError(c, fmt.Sprintf("处理流式格式失败: %v, 数据: %s", err, data[:min(100, len(data))]))
 		}
 		lastStreamData = data
 		streamItems = append(streamItems, data)
 		return true
 	})
+
+	common.LogInfo(c, fmt.Sprintf("流式响应处理完成，共接收 %d 个数据块", streamDataCount))
 
 	var lastStreamResponse dto.ChatCompletionsStreamResponse
 	err := common.DecodeJsonStr(lastStreamData, &lastStreamResponse)
@@ -185,14 +203,28 @@ func OpenaiHandler(c *gin.Context, resp *http.Response, info *relaycommon.RelayI
 	var simpleResponse dto.OpenAITextResponse
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		common.LogError(c, fmt.Sprintf("读取响应体失败: %v", err))
 		return service.OpenAIErrorWrapper(err, "read_response_body_failed", http.StatusInternalServerError), nil
 	}
 	err = resp.Body.Close()
 	if err != nil {
+		common.LogError(c, fmt.Sprintf("关闭响应体失败: %v", err))
 		return service.OpenAIErrorWrapper(err, "close_response_body_failed", http.StatusInternalServerError), nil
 	}
+
+	// 添加调试日志：记录响应体内容
+	if len(responseBody) == 0 {
+		common.LogError(c, "响应体为空")
+		return service.OpenAIErrorWrapper(fmt.Errorf("empty response body"), "empty_response_body", http.StatusInternalServerError), nil
+	}
+
+	if common.DebugEnabled {
+		common.LogInfo(c, fmt.Sprintf("响应体长度: %d, 内容前200字符: %s", len(responseBody), string(responseBody[:min(200, len(responseBody))])))
+	}
+
 	err = common.DecodeJson(responseBody, &simpleResponse)
 	if err != nil {
+		common.LogError(c, fmt.Sprintf("解析响应体失败: %v, 响应体内容: %s", err, string(responseBody)))
 		return service.OpenAIErrorWrapper(err, "unmarshal_response_body_failed", http.StatusInternalServerError), nil
 	}
 	if simpleResponse.Error != nil && simpleResponse.Error.Type != "" {
