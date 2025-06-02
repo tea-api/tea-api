@@ -164,5 +164,29 @@ func SetApiRouter(router *gin.Engine) {
 			taskRoute.GET("/self", middleware.UserAuth(), controller.GetUserTask)
 			taskRoute.GET("/", middleware.AdminAuth(), controller.GetAllTask)
 		}
+
+		// 安全管理路由
+		securityRoute := apiRouter.Group("/security")
+		securityRoute.Use(middleware.AdminAuth())
+		{
+			// 安全统计和配置
+			securityRoute.GET("/stats", controller.GetSecurityStats)
+			securityRoute.GET("/config", controller.GetSecurityConfig)
+			securityRoute.PUT("/config", controller.UpdateSecurityConfig)
+			securityRoute.GET("/logs", controller.GetSecurityLogs)
+
+			// IP黑名单管理
+			securityRoute.GET("/blacklist", controller.GetBlacklist)
+			securityRoute.POST("/blacklist", controller.AddToBlacklist)
+			securityRoute.DELETE("/blacklist/:ip", controller.RemoveFromBlacklist)
+
+			// IP白名单管理
+			securityRoute.POST("/whitelist", controller.AddToWhitelist)
+			securityRoute.DELETE("/whitelist/:ip", controller.RemoveFromWhitelist)
+
+			// 异常检测配置
+			securityRoute.GET("/abnormal", controller.GetAbnormalDetectionConfig)
+			securityRoute.PUT("/abnormal", controller.UpdateAbnormalDetectionConfig)
+		}
 	}
 }

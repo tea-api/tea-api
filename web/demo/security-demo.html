@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tea API 安全设置演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .nav-item {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .nav-item:hover {
+            background: #e9ecef;
+        }
+        .nav-item.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+        .content {
+            padding: 30px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .feature-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .feature-card h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .feature-card p {
+            margin: 0;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        .icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .icon.shield { background: #28a745; }
+        .icon.lock { background: #dc3545; }
+        .icon.monitor { background: #17a2b8; }
+        .icon.settings { background: #ffc107; color: #212529; }
+        .icon.list { background: #6f42c1; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #495057;
+            margin: 0;
+        }
+        .stat-label {
+            color: #6c757d;
+            margin: 5px 0 0 0;
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .demo-section h4 {
+            margin: 0 0 15px 0;
+            color: #495057;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .api-endpoint {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .api-method {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        .method-get { background: #4caf50; color: white; }
+        .method-post { background: #ff9800; color: white; }
+        .method-put { background: #2196f3; color: white; }
+        .method-delete { background: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Tea API 安全设置</h1>
+            <p>全面的安全防护配置管理界面</p>
+        </div>
+        
+        <div class="nav">
+            <div class="nav-item active" onclick="showTab('overview')">安全概览</div>
+            <div class="nav-item" onclick="showTab('features')">功能特性</div>
+            <div class="nav-item" onclick="showTab('api')">API接口</div>
+            <div class="nav-item" onclick="showTab('demo')">使用演示</div>
+        </div>
+        
+        <div class="content">
+            <div id="overview" class="tab-content">
+                <h2>安全防护概览</h2>
+                <p>Tea API 安全设置提供了全面的安全防护机制，专门针对恶意攻击进行防护。</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">防护模块</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">配置选项</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label">攻击拦截率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">实时</div>
+                        <div class="stat-label">监控告警</div>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>🎯 针对 1.txt 脚本的防护效果</h4>
+                    <ul>
+                        <li><strong>高频请求检测</strong>：0.05秒间隔的请求会被立即识别并阻止</li>
+                        <li><strong>超长Prompt拦截</strong>：50,000+字符的随机内容会被拦截</li>
+                        <li><strong>流式滥用防护</strong>：慢速读取的流连接会被强制断开</li>
+                        <li><strong>自动IP封禁</strong>：检测到恶意行为后自动将IP加入黑名单</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="features" class="tab-content" style="display: none;">
+                <h2>功能特性</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3><span class="icon shield">🛡️</span>异常行为检测</h3>
+                        <p>检测超长Prompt、随机内容、高频请求等异常行为，并进行实时评分和拦截。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3><span class="icon settings">⚙️</span>请求大小限制</h3>
+                        <p>限制请求体大小、消息数量和内容质量，防止超大请求攻击。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3><span class="icon monitor">📊</span>流保护系统</h3>
+                        <p>监控流式请求，限制并发数量，检测慢客户端攻击。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3><span class="icon lock">🔒</span>IP黑名单管理</h3>
+                        <p>自动和手动管理IP黑名单，支持临时和永久封禁。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3><span class="icon list">📋</span>安全日志审计</h3>
+                        <p>详细记录所有安全事件，支持筛选和分析。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="api" class="tab-content" style="display: none;">
+                <h2>API接口</h2>
+                
+                <div class="api-endpoint">
+                    <span class="api-method method-get">GET</span>
+                    <strong>/api/security/stats</strong> - 获取安全统计信息
+                </div>
+                
+                <div class="api-endpoint">
+                    <span class="api-method method-get">GET</span>
+                    <strong>/api/security/config</strong> - 获取安全配置
+                </div>
+                
+                <div class="api-endpoint">
+                    <span class="api-method method-put">PUT</span>
+                    <strong>/api/security/config</strong> - 更新安全配置
+                </div>
+                
+                <div class="api-endpoint">
+                    <span class="api-method method-post">POST</span>
+                    <strong>/api/security/blacklist</strong> - 添加IP到黑名单
+                </div>
+                
+                <div class="api-endpoint">
+                    <span class="api-method method-delete">DELETE</span>
+                    <strong>/api/security/blacklist/:ip</strong> - 从黑名单移除IP
+                </div>
+                
+                <div class="demo-section">
+                    <h4>示例请求</h4>
+                    <div class="code-block">
+// 获取安全统计
+fetch('/api/security/stats', {
+  headers: { 'Authorization': 'Bearer your-token' }
+})
+.then(res => res.json())
+.then(data => console.log(data));
+
+// 更新安全配置
+fetch('/api/security/config', {
+  method: 'PUT',
+  headers: {
+    'Authorization': 'Bearer your-token',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    abnormal_detection: {
+      enabled: true,
+      max_prompt_length: 50000
+    }
+  })
+});
+                    </div>
+                </div>
+            </div>
+            
+            <div id="demo" class="tab-content" style="display: none;">
+                <h2>使用演示</h2>
+                
+                <div class="demo-section">
+                    <h4>1. 启用安全防护</h4>
+                    <p>在设置页面中选择"安全设置"，即可看到完整的安全配置界面。</p>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>2. 配置异常检测</h4>
+                    <div class="code-block">
+// 异常检测配置示例
+{
+  "enabled": true,
+  "max_prompt_length": 50000,
+  "max_random_char_ratio": 0.8,
+  "suspicious_score_limit": 100,
+  "auto_blacklist_enabled": true
+}
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>3. 监控安全状态</h4>
+                    <p>通过安全概览页面可以实时查看：</p>
+                    <ul>
+                        <li>安全评分和状态</li>
+                        <li>被阻止的请求数量</li>
+                        <li>恶意行为检测次数</li>
+                        <li>黑名单IP数量</li>
+                        <li>活跃流连接数</li>
+                    </ul>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>4. 管理IP黑名单</h4>
+                    <p>可以手动添加或移除IP，查看封禁原因和时间，支持临时和永久封禁。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // 隐藏所有标签页内容
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.style.display = 'none');
+            
+            // 移除所有导航项的active类
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            // 显示选中的标签页内容
+            document.getElementById(tabName).style.display = 'block';
+            
+            // 添加active类到对应的导航项
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

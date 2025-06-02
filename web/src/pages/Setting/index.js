@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Layout, Nav, Typography, Card } from '@douyinfe/semi-ui';
-import { 
-  IconSetting, 
-  IconUser, 
+import {
+  IconSetting,
+  IconUser,
   IconCustomize,
   IconPieChartStroked,
-  IconServer
+  IconServer,
+  IconShield
 } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import SystemSetting from '../../components/SystemSetting';
@@ -14,6 +15,7 @@ import PersonalSetting from '../../components/PersonalSetting';
 import OperationSetting from '../../components/OperationSetting';
 import RateLimitSetting from '../../components/RateLimitSetting.js';
 import ModelSetting from '../../components/ModelSetting.js';
+import SecuritySetting from '../../components/SecuritySetting.js';
 import { isRoot } from '../../helpers';
 import './style.css';
 
@@ -38,6 +40,8 @@ const Setting = () => {
         return <ModelSetting />;
       case 'ratelimit':
         return <RateLimitSetting />;
+      case 'security':
+        return <SecuritySetting />;
       case 'other':
         return <OtherSetting />;
       case 'personal':
@@ -62,6 +66,7 @@ const Setting = () => {
               { itemKey: 'operation', text: t('运营设置'), icon: <IconSetting /> },
               { itemKey: 'model', text: t('模型设置'), icon: <IconCustomize /> },
               { itemKey: 'ratelimit', text: t('限流设置'), icon: <IconPieChartStroked /> },
+              { itemKey: 'security', text: t('安全设置'), icon: <IconShield /> },
               { itemKey: 'other', text: t('其他设置'), icon: <IconSetting /> },
               { itemKey: 'personal', text: t('个人设置'), icon: <IconUser /> }
             ] : [
@@ -77,6 +82,7 @@ const Setting = () => {
               {activeKey === 'operation' && t('运营设置')}
               {activeKey === 'model' && t('模型设置')}
               {activeKey === 'ratelimit' && t('限流设置')}
+              {activeKey === 'security' && t('安全设置')}
               {activeKey === 'other' && t('其他设置')}
               {activeKey === 'personal' && t('个人设置')}
             </Title>

@@ -233,7 +233,13 @@ func main() {
 	// This will cause SSE not to work!!!
 	//server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.RequestId())
-	server.Use(middleware.AbnormalDetection())
+
+	// 安全中间件 - 按优先级顺序添加
+	server.Use(middleware.IPBlacklist())           // IP黑名单检查（最高优先级）
+	server.Use(middleware.RequestSizeLimit())      // 请求大小限制
+	server.Use(middleware.AbnormalDetection())     // 异常行为检测
+	server.Use(middleware.StreamProtection())      // 流保护
+
 	middleware.SetUpLogger(server)
 	// Initialize session store
 	store := cookie.NewStore([]byte(common.SessionSecret))
