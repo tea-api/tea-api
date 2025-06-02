@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Layout, Nav, Card, Typography, Spin } from '@douyinfe/semi-ui';
 import {
   IconShield,
@@ -10,12 +10,18 @@ import {
 } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError } from '../helpers';
-import SecurityOverview from './Security/SecurityOverview';
-import AbnormalDetectionSettings from './Security/AbnormalDetectionSettings';
-import RequestLimitSettings from './Security/RequestLimitSettings';
-import StreamProtectionSettings from './Security/StreamProtectionSettings';
-import IPBlacklistSettings from './Security/IPBlacklistSettings';
-import SecurityLogs from './Security/SecurityLogs';
+const SecurityOverview = lazy(() => import('./Security/SecurityOverview'));
+const AbnormalDetectionSettings = lazy(() =>
+  import('./Security/AbnormalDetectionSettings')
+);
+const RequestLimitSettings = lazy(() =>
+  import('./Security/RequestLimitSettings')
+);
+const StreamProtectionSettings = lazy(() =>
+  import('./Security/StreamProtectionSettings')
+);
+const IPBlacklistSettings = lazy(() => import('./Security/IPBlacklistSettings'));
+const SecurityLogs = lazy(() => import('./Security/SecurityLogs'));
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
@@ -175,7 +181,7 @@ const SecuritySetting = () => {
             </div>
             
             <Spin spinning={loading}>
-              {renderSettingComponent()}
+              <Suspense fallback={null}>{renderSettingComponent()}</Suspense>
             </Spin>
           </Content>
         </Layout>
