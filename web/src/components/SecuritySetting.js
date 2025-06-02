@@ -1,4 +1,4 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Nav, Card, Typography, Spin } from '@douyinfe/semi-ui';
 import {
   IconShield,
@@ -6,22 +6,16 @@ import {
   IconMonitorStroked,
   IconAlertTriangle,
   IconSetting,
-  IconList
+  IconList,
 } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError } from '../helpers';
-const SecurityOverview = lazy(() => import('./Security/SecurityOverview'));
-const AbnormalDetectionSettings = lazy(() =>
-  import('./Security/AbnormalDetectionSettings')
-);
-const RequestLimitSettings = lazy(() =>
-  import('./Security/RequestLimitSettings')
-);
-const StreamProtectionSettings = lazy(() =>
-  import('./Security/StreamProtectionSettings')
-);
-const IPBlacklistSettings = lazy(() => import('./Security/IPBlacklistSettings'));
-const SecurityLogs = lazy(() => import('./Security/SecurityLogs'));
+import SecurityOverview from './Security/SecurityOverview';
+import AbnormalDetectionSettings from './Security/AbnormalDetectionSettings';
+import RequestLimitSettings from './Security/RequestLimitSettings';
+import StreamProtectionSettings from './Security/StreamProtectionSettings';
+import IPBlacklistSettings from './Security/IPBlacklistSettings';
+import SecurityLogs from './Security/SecurityLogs';
 
 const { Sider, Content } = Layout;
 const { Title } = Typography;
@@ -38,13 +32,13 @@ const SecuritySetting = () => {
     try {
       const [configRes, statsRes] = await Promise.all([
         API.get('/api/security/config'),
-        API.get('/api/security/stats')
+        API.get('/api/security/stats'),
       ]);
-      
+
       if (configRes.data.success) {
         setSecurityConfig(configRes.data.data);
       }
-      
+
       if (statsRes.data.success) {
         setSecurityStats(statsRes.data.data);
       }
@@ -72,7 +66,7 @@ const SecuritySetting = () => {
       config: securityConfig,
       stats: securityStats,
       refresh: refreshData,
-      loading
+      loading,
     };
 
     switch (activeKey) {
@@ -100,7 +94,7 @@ const SecuritySetting = () => {
       request: t('请求限制'),
       stream: t('流保护'),
       blacklist: t('IP管理'),
-      logs: t('安全日志')
+      logs: t('安全日志'),
     };
     return titles[activeKey] || t('安全设置');
   };
@@ -108,24 +102,31 @@ const SecuritySetting = () => {
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Layout style={{ flex: 1, background: 'var(--semi-color-bg-0)' }}>
-        <Sider 
-          style={{ 
+        <Sider
+          style={{
             background: 'var(--semi-color-bg-1)',
-            borderRight: '1px solid var(--semi-color-border)'
+            borderRight: '1px solid var(--semi-color-border)',
           }}
           width={240}
         >
-          <div style={{ 
-            padding: '20px 16px', 
-            borderBottom: '1px solid var(--semi-color-border)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <IconShield size="large" style={{ color: 'var(--semi-color-primary)' }} />
-            <Title heading={4} style={{ margin: 0 }}>{t('安全设置')}</Title>
+          <div
+            style={{
+              padding: '20px 16px',
+              borderBottom: '1px solid var(--semi-color-border)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <IconShield
+              size='large'
+              style={{ color: 'var(--semi-color-primary)' }}
+            />
+            <Title heading={4} style={{ margin: 0 }}>
+              {t('安全设置')}
+            </Title>
           </div>
-          
+
           <Nav
             selectedKeys={[activeKey]}
             onSelect={({ itemKey }) => handleNavChange(itemKey)}
@@ -133,56 +134,56 @@ const SecuritySetting = () => {
               {
                 itemKey: 'overview',
                 text: t('安全概览'),
-                icon: <IconMonitorStroked />
+                icon: <IconMonitorStroked />,
               },
-              { 
-                itemKey: 'abnormal', 
-                text: t('异常检测'), 
-                icon: <IconAlertTriangle /> 
+              {
+                itemKey: 'abnormal',
+                text: t('异常检测'),
+                icon: <IconAlertTriangle />,
               },
               {
                 itemKey: 'request',
                 text: t('请求限制'),
-                icon: <IconSetting />
+                icon: <IconSetting />,
               },
-              { 
-                itemKey: 'stream', 
-                text: t('流保护'), 
-                icon: <IconShield /> 
+              {
+                itemKey: 'stream',
+                text: t('流保护'),
+                icon: <IconShield />,
               },
-              { 
-                itemKey: 'blacklist', 
-                text: t('IP管理'), 
-                icon: <IconLock /> 
+              {
+                itemKey: 'blacklist',
+                text: t('IP管理'),
+                icon: <IconLock />,
               },
-              { 
-                itemKey: 'logs', 
-                text: t('安全日志'), 
-                icon: <IconList /> 
-              }
+              {
+                itemKey: 'logs',
+                text: t('安全日志'),
+                icon: <IconList />,
+              },
             ]}
-            style={{ 
+            style={{
               marginTop: '16px',
-              padding: '0 8px'
+              padding: '0 8px',
             }}
           />
         </Sider>
-        
+
         <Layout>
-          <Content style={{ 
-            padding: '24px',
-            background: 'var(--semi-color-bg-0)',
-            overflow: 'auto'
-          }}>
+          <Content
+            style={{
+              padding: '24px',
+              background: 'var(--semi-color-bg-0)',
+              overflow: 'auto',
+            }}
+          >
             <div style={{ marginBottom: '24px' }}>
               <Title heading={3} style={{ margin: 0 }}>
                 {getPageTitle()}
               </Title>
             </div>
-            
-            <Spin spinning={loading}>
-              <Suspense fallback={null}>{renderSettingComponent()}</Suspense>
-            </Spin>
+
+            <Spin spinning={loading}>{renderSettingComponent()}</Spin>
           </Content>
         </Layout>
       </Layout>
